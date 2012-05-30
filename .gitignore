@@ -3,6 +3,7 @@ Examples/test-suite/*/Makefile
 CCache/Makefile
 CCache/autom4te.cache/
 CCache/ccache-swig
+CCache/ccache-swig.exe
 CCache/ccache_swig_config.h
 CCache/config.h
 CCache/config.h.in
@@ -32,6 +33,7 @@ Source/Preprocessor/.dirstamp
 Source/Swig/.deps/
 Source/Swig/.dirstamp
 Source/eswig
+Source/eswig.exe
 Tools/config/compile
 Tools/config/config.guess
 Tools/config/config.sub
@@ -46,4 +48,5 @@ config.status
 configure
 preinst-swig
 swig
+swig.exe
 swig.spec

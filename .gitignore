@@ -5,6 +5,8 @@ CCache/autom4te.cache/
 CCache/ccache-swig
 CCache/ccache_swig_config.h
 CCache/config.h
+CCache/config.h.in
+CCache/config.h.in~
 CCache/config.log
 CCache/config.status
 CCache/configure
@@ -19,6 +21,8 @@ Source/DOH/.deps/
 Source/DOH/.dirstamp
 Source/Include/stamp-h1
 Source/Include/swigconfig.h
+Source/Include/swigconfig.h.in
+Source/Include/swigconfig.h.in~
 Source/Makefile
 Source/Makefile.in
 Source/Modules/.deps/

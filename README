@@ -1,3 +1,21 @@
+Hello, this is MATLAB SWIG module.
+
+38.10.14 Prerequisites for adding a new language module to the SWIG distribution
+
+If you wish for a new language module to be distributed with SWIG, which we encourage for all popular languages, there are a few requirements. While we appreciate that getting all aspects of a new language working won't happen at the outset, there are a set of minimum requirements before a module can be committed into the SVN repository for distribution with future versions of SWIG. The following are really a summary of this whole section with details being outlined earlier on.
+
+Demonstrate basic C code working by porting the "simple" example including a runtime test, see for example Examples/python/simple .
+Demonstrate basic C++ code working by porting the "class" example including a runtime test, see for example Examples/python/class .
+Modify configure.in, Makefile.in and Examples/Makefile.in to run these examples. Please make sure that if the new language is not installed properly on a box, make -k check should still work by skipping the tests and examples for the new language module.
+Get the test-suite running for the new language (make check-[lang]-test-suite). While the test-suite tests many corner cases, we'd expect the majority of it to work by compiling the generated code correctly as most of the corner cases are covered in the SWIG core. Get at least one C and one C++ runtime test running in the test-suite.
+Provide a chapter in the html documentation on the basics of using the language module.
+Ensure your source code is formatted according to the coding style guidelines.
+Finally, email the SWIG developers with a patch and a demonstration of commitment to maintaining the language module, certainly in the short term and ideally long term.
+Once accepted into SVN, development efforts should concentrate on getting the entire test-suite to work with plenty of runtime tests. Runtime tests should be for existing testcases and new test cases should be added should there be an area not already covered by the existing tests.
+
+======================================================================================
+and now, SWIG README:
+
 SWIG (Simplified Wrapper and Interface Generator)
 
 Version: 2.0.4 (21 May 2011)

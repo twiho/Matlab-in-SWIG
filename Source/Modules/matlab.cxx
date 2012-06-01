@@ -1,13 +1,64 @@
 #include "swigmod.h"
 
 class MATLAB : public Language {
+
+protected:
+  typedef struct {
+    String* cppName;
+    String* matlabName;
+  } ClassNameItem;
+
+  struct {
+    int size;
+    int capacity;
+    ClassNameItem* list;
+  } ClassNameList;
+
+  bool ClassNameList_add(String* cppName, String* matlabName);
+  String* ClassNameList_getMatlabName(String* cppName);
+  void ClassNameList_print();
+
 public:
 
   virtual void main(int argc, char *argv[]);
   virtual int top(Node *n);
+  int classHandler(Node *n);
   int functionWrapper(Node *n);
 
 };
+
+
+bool MATLAB::ClassNameList_add(String* cppName, String* matlabName) {
+  if(ClassNameList.size == ClassNameList.capacity) {
+    void* temp_ptr = realloc(ClassNameList.list, 2*ClassNameList.capacity*sizeof(ClassNameItem));
+    if(temp_ptr == 0)
+      return false;
+    ClassNameList.list = (ClassNameItem*) temp_ptr;
+    ClassNameList.capacity = 2*ClassNameList.capacity;
+  }
+  ClassNameItem newClassNameItem;
+  newClassNameItem.cppName = cppName;
+  newClassNameItem.matlabName = matlabName;
+  ClassNameList.list[ClassNameList.size] = newClassNameItem;
+  ClassNameList.size++;
+  return true;
+}
+
+
+String* MATLAB::ClassNameList_getMatlabName(String* cppName) {
+  for(int i=0; i<ClassNameList.size; i++)
+    if(ClassNameList.list[i].cppName == cppName)
+      return ClassNameList.list[i].matlabName;
+  return 0;
+}
+
+
+void MATLAB::ClassNameList_print() {
+  Printf(stderr,"\nClassNames:\n");
+  for(int i=0; i<ClassNameList.size; i++)
+    Printf(stderr,"%s = %s",ClassNameList.list[i].cppName,ClassNameList.list[i].matlabName);
+}
+
 
 int MATLAB::top(Node *n) {
 
@@ -33,8 +84,8 @@ int MATLAB::top(Node *n) {
 //   Swig_banner(f_begin);
 
 
-   /* Emit code for children */
-   Language::top(n);
+  /* Emit code for children */
+  Language::top(n);
 
 
 //   /* Write all to the file */
@@ -51,23 +102,35 @@ int MATLAB::top(Node *n) {
 //   Close(f_begin);
 //   Delete(f_begin);
 
-   return SWIG_OK;
+  return SWIG_OK;
 }
 
 
-  void MATLAB::main(int argc, char *argv[]) {
-       /* Set language-specific subdirectory in SWIG library */
-   SWIG_library_directory("matlab");
+void MATLAB::main(int argc, char *argv[]) {
+  /* Set language-specific subdirectory in SWIG library */
+  SWIG_library_directory("matlab");
 
-   /* Set language-specific preprocessing symbol */
-   Preprocessor_define("SWIGMATLAB 1", 0);
+  /* Set language-specific preprocessing symbol */
+  Preprocessor_define("SWIGMATLAB 1", 0);
 
-   /* Set language-specific configuration file */
-   SWIG_config_file("matlab.swg");
+  /* Set language-specific configuration file */
+  SWIG_config_file("matlab.swg");
 
-   /* Set typemap language (historical) */
-   SWIG_typemap_lang("matlab");
-  }
+  /* Set typemap language (historical) */
+  SWIG_typemap_lang("matlab");
+ 
+  ClassNameList.list = (ClassNameItem*) malloc(10*sizeof(ClassNameItem));
+  if(ClassNameList.list == 0)
+    exit(1);
+  ClassNameList.size = 0;
+  ClassNameList.capacity = 10;
+}
+
+
+int MATLAB::classHandler(Node* n) {
+  String   *name   = Getattr(n,"sym:name");
+  Printf(stderr,"classWrapper   : %s\n", name);
+}
 
 
 int MATLAB::functionWrapper(Node *n) {

@@ -11,7 +11,7 @@
  * Guile language module for SWIG.
  * ----------------------------------------------------------------------------- */
 
-char cvsroot_guile_cxx[] = "$Id: guile.cxx 12558 2011-03-26 23:25:14Z wsfulton $";
+char cvsroot_guile_cxx[] = "$Id: guile.cxx 12830 2011-10-30 21:51:50Z wsfulton $";
 
 #include "swigmod.h"
 
@@ -882,10 +882,10 @@ public:
       Printv(actioncode, tab4, "gh_allow_ints();\n", NIL);
 
     // Now have return value, figure out what to do with it.
-    if ((tm = Swig_typemap_lookup_out("out", n, "result", f, actioncode))) {
+    if ((tm = Swig_typemap_lookup_out("out", n, Swig_cresult_name(), f, actioncode))) {
       Replaceall(tm, "$result", "gswig_result");
       Replaceall(tm, "$target", "gswig_result");
-      Replaceall(tm, "$source", "result");
+      Replaceall(tm, "$source", Swig_cresult_name());
       if (GetFlag(n, "feature:new"))
 	Replaceall(tm, "$owner", "1");
       else
@@ -922,14 +922,14 @@ public:
     // Look for any remaining cleanup
 
     if (GetFlag(n, "feature:new")) {
-      if ((tm = Swig_typemap_lookup("newfree", n, "result", 0))) {
-	Replaceall(tm, "$source", "result");
+      if ((tm = Swig_typemap_lookup("newfree", n, Swig_cresult_name(), 0))) {
+	Replaceall(tm, "$source", Swig_cresult_name());
 	Printv(f->code, tm, "\n", NIL);
       }
     }
     // Free any memory allocated by the function being wrapped..
-    if ((tm = Swig_typemap_lookup("ret", n, "result", 0))) {
-      Replaceall(tm, "$source", "result");
+    if ((tm = Swig_typemap_lookup("ret", n, Swig_cresult_name(), 0))) {
+      Replaceall(tm, "$source", Swig_cresult_name());
       Printv(f->code, tm, "\n", NIL);
     }
     // Wrap things up (in a manner of speaking)

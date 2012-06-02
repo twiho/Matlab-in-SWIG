@@ -13,7 +13,7 @@
  * are provided.
  * ----------------------------------------------------------------------------- */
 
-char cvsroot_include_c[] = "$Id: include.c 12211 2010-09-10 06:08:45Z wsfulton $";
+char cvsroot_include_c[] = "$Id: include.c 12930 2012-03-18 04:58:08Z drjoe $";
 
 #include "swig.h"
 
@@ -21,6 +21,7 @@ static List   *directories = 0;	        /* List of include directories */
 static String *lastpath = 0;	        /* Last file that was included */
 static List   *pdirectories = 0;        /* List of pushed directories  */
 static int     dopush = 1;		/* Whether to push directories */
+static int file_debug = 0;
 
 /* This functions determine whether to push/pop dirs in the preprocessor */
 void Swig_set_push_dir(int push) {
@@ -173,6 +174,9 @@ static FILE *Swig_open_file(const_String_or_char_ptr name, int sysfile, int use_
   cname = Char(name);
   filename = NewString(cname);
   assert(filename);
+  if (file_debug) {
+    Printf(stdout, "  Open: %s\n", filename);
+  }
   f = fopen(Char(filename), "r");
   if (!f && use_include_path) {
     spath = Swig_search_path_any(sysfile);
@@ -385,4 +389,11 @@ char *Swig_file_dirname(const_String_or_char_ptr filename) {
     c--;
   *(++c) = 0;
   return tmp;
+}
+
+/*
+ * Swig_file_debug()
+ */
+void Swig_file_debug_set() {
+  file_debug = 1;
 }

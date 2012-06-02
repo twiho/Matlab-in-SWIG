@@ -15,18 +15,18 @@ public class runme {
     
     int x = 42;
     int y = 105;
-    int g = Example.gcd(x,y);
+    int g = example.gcd(x,y);
     System.out.println("The gcd of " + x + " and " + y + " is " + g);
     
     // Manipulate the Foo global variable
     
     // Output its current value
-    System.out.println("Foo = " + Example.getFoo());
+    System.out.println("Foo = " + example.getFoo());
     
     // Change its value
-    Example.setFoo(3.1415926);
+    example.setFoo(3.1415926);
     
     // See if the change took effect
-    System.out.println("Foo = " + Example.getFoo());
+    System.out.println("Foo = " + example.getFoo());
   }
 }

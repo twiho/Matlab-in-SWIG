@@ -11,7 +11,7 @@
  * Tcl8 language module for SWIG.
  * ----------------------------------------------------------------------------- */
 
-char cvsroot_tcl8_cxx[] = "$Id: tcl8.cxx 12655 2011-05-05 06:23:02Z wsfulton $";
+char cvsroot_tcl8_cxx[] = "$Id: tcl8.cxx 12830 2011-10-30 21:51:50Z wsfulton $";
 
 #include "swigmod.h"
 #include "cparse.h"
@@ -460,8 +460,8 @@ public:
     /* Need to redo all of this code (eventually) */
 
     /* Return value if necessary  */
-    if ((tm = Swig_typemap_lookup_out("out", n, "result", f, actioncode))) {
-      Replaceall(tm, "$source", "result");
+    if ((tm = Swig_typemap_lookup_out("out", n, Swig_cresult_name(), f, actioncode))) {
+      Replaceall(tm, "$source", Swig_cresult_name());
 #ifdef SWIG_USE_RESULTOBJ
       Replaceall(tm, "$target", "resultobj");
       Replaceall(tm, "$result", "resultobj");
@@ -488,14 +488,14 @@ public:
 
     /* Look for any remaining cleanup */
     if (GetFlag(n, "feature:new")) {
-      if ((tm = Swig_typemap_lookup("newfree", n, "result", 0))) {
-	Replaceall(tm, "$source", "result");
+      if ((tm = Swig_typemap_lookup("newfree", n, Swig_cresult_name(), 0))) {
+	Replaceall(tm, "$source", Swig_cresult_name());
 	Printf(f->code, "%s\n", tm);
       }
     }
 
-    if ((tm = Swig_typemap_lookup("ret", n, "result", 0))) {
-      Replaceall(tm, "$source", "result");
+    if ((tm = Swig_typemap_lookup("ret", n, Swig_cresult_name(), 0))) {
+      Replaceall(tm, "$source", Swig_cresult_name());
       Printf(f->code, "%s\n", tm);
     }
 #ifdef SWIG_USE_RESULTOBJ

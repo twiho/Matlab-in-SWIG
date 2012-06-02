@@ -11,7 +11,7 @@
  * cffi language module for SWIG.
  * ----------------------------------------------------------------------------- */
 
-char cvsroot_cffi_cxx[] = "$Id: cffi.cxx 12524 2011-03-09 21:42:38Z wsfulton $";
+char cvsroot_cffi_cxx[] = "$Id: cffi.cxx 12830 2011-10-30 21:51:50Z wsfulton $";
 
 #include "swigmod.h"
 #include "cparse.h"
@@ -461,7 +461,7 @@ int CFFI::functionWrapper(Node *n) {
 
   String *actioncode = emit_action(n);
 
-  String *result_convert = Swig_typemap_lookup_out("out", n, "result", f, actioncode);
+  String *result_convert = Swig_typemap_lookup_out("out", n, Swig_cresult_name(), f, actioncode);
   Replaceall(result_convert, "$result", "lresult");
   Printf(f->code, "%s\n", result_convert);
   if(!is_void_return) Printf(f->code, "    return lresult;\n");

@@ -93,76 +93,78 @@
      MODULE = 309,
      LBRACKET = 310,
      RBRACKET = 311,
-     ILLEGAL = 312,
-     CONSTANT = 313,
-     NAME = 314,
-     RENAME = 315,
-     NAMEWARN = 316,
-     EXTEND = 317,
-     PRAGMA = 318,
-     FEATURE = 319,
-     VARARGS = 320,
-     ENUM = 321,
-     CLASS = 322,
-     TYPENAME = 323,
-     PRIVATE = 324,
-     PUBLIC = 325,
-     PROTECTED = 326,
-     COLON = 327,
-     STATIC = 328,
-     VIRTUAL = 329,
-     FRIEND = 330,
-     THROW = 331,
-     CATCH = 332,
-     EXPLICIT = 333,
-     USING = 334,
-     NAMESPACE = 335,
-     NATIVE = 336,
-     INLINE = 337,
-     TYPEMAP = 338,
-     EXCEPT = 339,
-     ECHO = 340,
-     APPLY = 341,
-     CLEAR = 342,
-     SWIGTEMPLATE = 343,
-     FRAGMENT = 344,
-     WARN = 345,
-     LESSTHAN = 346,
-     GREATERTHAN = 347,
-     DELETE_KW = 348,
-     LESSTHANOREQUALTO = 349,
-     GREATERTHANOREQUALTO = 350,
-     EQUALTO = 351,
-     NOTEQUALTO = 352,
-     QUESTIONMARK = 353,
-     TYPES = 354,
-     PARMS = 355,
-     NONID = 356,
-     DSTAR = 357,
-     DCNOT = 358,
-     TEMPLATE = 359,
-     OPERATOR = 360,
-     COPERATOR = 361,
-     PARSETYPE = 362,
-     PARSEPARM = 363,
-     PARSEPARMS = 364,
-     CAST = 365,
-     LOR = 366,
-     LAND = 367,
-     OR = 368,
-     XOR = 369,
-     AND = 370,
-     RSHIFT = 371,
-     LSHIFT = 372,
-     MINUS = 373,
-     PLUS = 374,
-     MODULO = 375,
-     SLASH = 376,
-     STAR = 377,
-     LNOT = 378,
-     NOT = 379,
-     UMINUS = 380,
-     DCOLON = 381
+     BEGINFILE = 312,
+     ENDOFFILE = 313,
+     ILLEGAL = 314,
+     CONSTANT = 315,
+     NAME = 316,
+     RENAME = 317,
+     NAMEWARN = 318,
+     EXTEND = 319,
+     PRAGMA = 320,
+     FEATURE = 321,
+     VARARGS = 322,
+     ENUM = 323,
+     CLASS = 324,
+     TYPENAME = 325,
+     PRIVATE = 326,
+     PUBLIC = 327,
+     PROTECTED = 328,
+     COLON = 329,
+     STATIC = 330,
+     VIRTUAL = 331,
+     FRIEND = 332,
+     THROW = 333,
+     CATCH = 334,
+     EXPLICIT = 335,
+     USING = 336,
+     NAMESPACE = 337,
+     NATIVE = 338,
+     INLINE = 339,
+     TYPEMAP = 340,
+     EXCEPT = 341,
+     ECHO = 342,
+     APPLY = 343,
+     CLEAR = 344,
+     SWIGTEMPLATE = 345,
+     FRAGMENT = 346,
+     WARN = 347,
+     LESSTHAN = 348,
+     GREATERTHAN = 349,
+     DELETE_KW = 350,
+     LESSTHANOREQUALTO = 351,
+     GREATERTHANOREQUALTO = 352,
+     EQUALTO = 353,
+     NOTEQUALTO = 354,
+     QUESTIONMARK = 355,
+     TYPES = 356,
+     PARMS = 357,
+     NONID = 358,
+     DSTAR = 359,
+     DCNOT = 360,
+     TEMPLATE = 361,
+     OPERATOR = 362,
+     COPERATOR = 363,
+     PARSETYPE = 364,
+     PARSEPARM = 365,
+     PARSEPARMS = 366,
+     CAST = 367,
+     LOR = 368,
+     LAND = 369,
+     OR = 370,
+     XOR = 371,
+     AND = 372,
+     RSHIFT = 373,
+     LSHIFT = 374,
+     MINUS = 375,
+     PLUS = 376,
+     MODULO = 377,
+     SLASH = 378,
+     STAR = 379,
+     LNOT = 380,
+     NOT = 381,
+     UMINUS = 382,
+     DCOLON = 383
    };
 #endif
 /* Tokens.  */
@@ -220,76 +222,78 @@
 #define MODULE 309
 #define LBRACKET 310
 #define RBRACKET 311
-#define ILLEGAL 312
-#define CONSTANT 313
-#define NAME 314
-#define RENAME 315
-#define NAMEWARN 316
-#define EXTEND 317
-#define PRAGMA 318
-#define FEATURE 319
-#define VARARGS 320
-#define ENUM 321
-#define CLASS 322
-#define TYPENAME 323
-#define PRIVATE 324
-#define PUBLIC 325
-#define PROTECTED 326
-#define COLON 327
-#define STATIC 328
-#define VIRTUAL 329
-#define FRIEND 330
-#define THROW 331
-#define CATCH 332
-#define EXPLICIT 333
-#define USING 334
-#define NAMESPACE 335
-#define NATIVE 336
-#define INLINE 337
-#define TYPEMAP 338
-#define EXCEPT 339
-#define ECHO 340
-#define APPLY 341
-#define CLEAR 342
-#define SWIGTEMPLATE 343
-#define FRAGMENT 344
-#define WARN 345
-#define LESSTHAN 346
-#define GREATERTHAN 347
-#define DELETE_KW 348
-#define LESSTHANOREQUALTO 349
-#define GREATERTHANOREQUALTO 350
-#define EQUALTO 351
-#define NOTEQUALTO 352
-#define QUESTIONMARK 353
-#define TYPES 354
-#define PARMS 355
-#define NONID 356
-#define DSTAR 357
-#define DCNOT 358
-#define TEMPLATE 359
-#define OPERATOR 360
-#define COPERATOR 361
-#define PARSETYPE 362
-#define PARSEPARM 363
-#define PARSEPARMS 364
-#define CAST 365
-#define LOR 366
-#define LAND 367
-#define OR 368
-#define XOR 369
-#define AND 370
-#define RSHIFT 371
-#define LSHIFT 372
-#define MINUS 373
-#define PLUS 374
-#define MODULO 375
-#define SLASH 376
-#define STAR 377
-#define LNOT 378
-#define NOT 379
-#define UMINUS 380
-#define DCOLON 381
+#define BEGINFILE 312
+#define ENDOFFILE 313
+#define ILLEGAL 314
+#define CONSTANT 315
+#define NAME 316
+#define RENAME 317
+#define NAMEWARN 318
+#define EXTEND 319
+#define PRAGMA 320
+#define FEATURE 321
+#define VARARGS 322
+#define ENUM 323
+#define CLASS 324
+#define TYPENAME 325
+#define PRIVATE 326
+#define PUBLIC 327
+#define PROTECTED 328
+#define COLON 329
+#define STATIC 330
+#define VIRTUAL 331
+#define FRIEND 332
+#define THROW 333
+#define CATCH 334
+#define EXPLICIT 335
+#define USING 336
+#define NAMESPACE 337
+#define NATIVE 338
+#define INLINE 339
+#define TYPEMAP 340
+#define EXCEPT 341
+#define ECHO 342
+#define APPLY 343
+#define CLEAR 344
+#define SWIGTEMPLATE 345
+#define FRAGMENT 346
+#define WARN 347
+#define LESSTHAN 348
+#define GREATERTHAN 349
+#define DELETE_KW 350
+#define LESSTHANOREQUALTO 351
+#define GREATERTHANOREQUALTO 352
+#define EQUALTO 353
+#define NOTEQUALTO 354
+#define QUESTIONMARK 355
+#define TYPES 356
+#define PARMS 357
+#define NONID 358
+#define DSTAR 359
+#define DCNOT 360
+#define TEMPLATE 361
+#define OPERATOR 362
+#define COPERATOR 363
+#define PARSETYPE 364
+#define PARSEPARM 365
+#define PARSEPARMS 366
+#define CAST 367
+#define LOR 368
+#define LAND 369
+#define OR 370
+#define XOR 371
+#define AND 372
+#define RSHIFT 373
+#define LSHIFT 374
+#define MINUS 375
+#define PLUS 376
+#define MODULO 377
+#define SLASH 378
+#define STAR 379
+#define LNOT 380
+#define NOT 381
+#define UMINUS 382
+#define DCOLON 383
 
 
 
@@ -299,7 +303,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 1592 "parser.y"
+#line 1593 "parser.y"
 
   char  *id;
   List  *bases;
@@ -345,7 +349,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 349 "CParse/parser.h"
+#line 353 "y.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

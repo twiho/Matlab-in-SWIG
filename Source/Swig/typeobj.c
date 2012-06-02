@@ -14,7 +14,7 @@
  * like typedef, namespaces, etc.
  * ----------------------------------------------------------------------------- */
 
-char cvsroot_typeobj_c[] = "$Id: typeobj.c 12349 2010-12-15 21:55:08Z wsfulton $";
+char cvsroot_typeobj_c[] = "$Id: typeobj.c 12747 2011-06-20 17:46:38Z wsfulton $";
 
 #include "swig.h"
 #include <ctype.h>
@@ -925,6 +925,32 @@ String *SwigType_istemplate_templateprefix(const SwigType *t) {
   const char *s = Char(t);
   const char *c = strstr(s, "<(");
   return c ? NewStringWithSize(s, c - s) : 0;
+}
+
+/* -----------------------------------------------------------------------------
+ * SwigType_istemplate_only_templateprefix()
+ *
+ * Similar to SwigType_istemplate_templateprefix() but only returns the template
+ * prefix if the type is just the template and not a subtype/symbol within the template.
+ * Returns NULL if not a template or is a template with a symbol within the template.
+ * For example:
+ *
+ *     Foo<(p.int)>  =>  Foo
+ *     Foo<(p.int)>::bar  =>  NULL
+ *     r.q(const).Foo<(p.int)> => r.q(const).Foo
+ *     r.q(const).Foo<(p.int)>::bar => NULL
+ *     Foo => NULL
+ * ----------------------------------------------------------------------------- */
+
+String *SwigType_istemplate_only_templateprefix(const SwigType *t) {
+  int len = Len(t);
+  const char *s = Char(t);
+  if (len >= 4 && strcmp(s + len - 2, ")>") == 0) {
+    const char *c = strstr(s, "<(");
+    return c ? NewStringWithSize(s, c - s) : 0;
+  } else {
+    return 0;
+  }
 }
 
 /* -----------------------------------------------------------------------------

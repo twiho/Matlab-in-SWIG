@@ -12,7 +12,7 @@
  *     DOH objects.  A number of small utility functions are also included.
  * ----------------------------------------------------------------------------- */
 
-char cvsroot_base_c[] = "$Id: base.c 12167 2010-07-22 16:59:29Z vadz $";
+char cvsroot_base_c[] = "$Id: base.c 13024 2012-04-29 21:51:18Z wsfulton $";
 
 #include "dohint.h"
 
@@ -259,7 +259,7 @@ int DohEqual(const DOH *obj1, const DOH *obj2) {
 
     if (!b1info) {
       return obj1 == obj2;
-    } else if ((b1info == b2info)) {
+    } else if (b1info == b2info) {
       return b1info->doh_equal ? (b1info->doh_equal) (b1, b2) : (b1info->doh_cmp ? (b1info->doh_cmp) (b1, b2) == 0 : (b1 == b2));
     } else {
       return 0;

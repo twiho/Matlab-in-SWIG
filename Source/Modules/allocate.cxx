@@ -15,7 +15,7 @@
  * Doc/Manual/SWIGPlus.html for details.
  * ----------------------------------------------------------------------------- */
 
-char cvsroot_allocate_cxx[] = "$Id: allocate.cxx 12536 2011-03-14 07:22:08Z wsfulton $";
+char cvsroot_allocate_cxx[] = "$Id: allocate.cxx 12804 2011-09-13 06:15:29Z wsfulton $";
 
 #include "swigmod.h"
 #include "cparse.h"
@@ -936,6 +936,9 @@ Allocate():
       } else if (cplus_mode == PROTECTED) {
 	Setattr(inclass, "allocate:default_base_destructor", "1");
       }
+    } else {
+      Setattr(inclass, "allocate:has_destructor", "1");
+      Setattr(inclass, "allocate:default_destructor", "1");
     }
     return SWIG_OK;
   }

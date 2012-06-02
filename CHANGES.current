@@ -1,119 +1,95 @@
-This file contains the changes for the current release.
+Below are the changes for the current release.
 See the CHANGES file for changes in older releases.
 See the RELEASENOTES file for a summary of changes in each release.
 
-Version 2.0.4 (in progress)
+Version 2.0.7 (26 May 2012)
 ===========================
-2011-05-19: wsfulton
-	    [Guile] Patch #3191625 fixing overloading of integer types.
+2012-05-26: wsfulton
+            std::string typemap modifications so they can be used with %apply for other string
+            classes.
 
-2011-05-19: wsfulton
-	    [Perl] Patch #3260265 fixing overloading of non-primitive types and integers in 
-            Perl 5.12 and later.
+2012-05-25: wsfulton
+            [Lua] Fixes for -external-runtime to work again.
 
-2011-05-19: wsfulton
-	    [Ruby] Fix %import where one of the imported files %include one of the STL include
-            files such as std_vector.i.
+2012-05-22: szager
+	    [python] Disambiguate SWIG_From_unsigned_SS_int and SWIG_From_unsigned_SS_long.
 
-2011-05-17: wsfulton
-	    [Java] Apply #3289851 from Alan Harder to fix memory leak in directors when checking
-            for pending exceptions.
+2012-05-18: olly
+	    [PHP] Fix getters for template members. (SF#3428833, SF#3528035)
 
-2011-05-17: wsfulton
-	    [Tcl] Apply #3300072 from Christian Delbaere to fix multiple module loading not
-            always sharing variables across modules.
+2012-05-14: wsfulton
+            Fix some language's std::map wrappers to recognise difference_type, size_type, key_type
+            and mapped_type.
 
-2011-05-16: xavier98
-	    [octave] Fix an incompatibility with never versions of Octave. Case on Octave
-	    API >= 40 to handle rename of Octave_map to octave_map.
-	    [octave] Add support for y.__rop__(x) operators when x.__op__(y) doesn't exist.
-	    [octave] Allow global operators to be defined by SWIG-wrapped functions.
-	    [octave] Fix several bugs around module namespaces; add -global, -noglobal,
-	    -globals <name> command line options to the module.
+2012-05-14: kwwette (signed off by xavier98)
+            [Octave] Prevent Octave from seg-faulting at exit when SWIG
+            modules are loaded, due to bugs in Octave's cleanup code:
+            * Wrapping functions now declared with Octave DEFUN_DLD macro,
+              and loaded through Octave's dynamic module loader
+            * Global variables of swigref type are now assigned a new()
+              copy of the swigref class, to prevent double-free errors
+            * SWIG module at-exit cleanup function now created in Octave
+              through eval(), so not dependent on loaded .oct library
+            * For Octave versions 3.1.* to 3.3.*, register C-level at-exit
+              function which terminates Octave immediately (with correct
+              status code) without performing memory cleanup. This function
+              can be controlled with macros in Lib/octave/octruntime.swg
 
-2011-05-14: wsfulton
-	    %varargs when used with a numeric argument used to create an additional argument 
-            which was intended to provide a guaranteed sentinel value. This never worked and now
-            the additional argument is not generated.
+            [Octave] New syntax for determing whether SWIG module should be
+            loaded globally or non-globally. To load module "example" globally,
+            type the module name
+            $ example;
+            as before; to load module non-globally, assign it to a variable:
+            $ example = example;
+            or
+            $ ex = example;
+            for a shorter (local) module name. -global/-noglobal command-line
+            options and module command line are deprecated. Added usage info
+            to module, so typing
+            $ help example
+            or incorrect usage should display proper usage, with examples.
 
-2011-05-13: wsfulton
-	    [python] Additional fixes for python3.2 support.
+            *** POTENTIAL INCOMPATIBILITY  ***
 
-2011-05-07: szager
-	    [python] Fixed PyGetSetDescr for python3.2.
+2012-05-12: olly
+	    [PHP] Fix memory leak in code generated for a callback.  Patch from
+	    SF bug #3510806.
 
-2011-05-05: wsfulton
-            [Lua, Python, Tcl] C/C++ prototypes shown in error message when calling an overloaded
-            method with incorrect arguments improved to show always show fully qualified name
-            and if a const method. 
+2012-05-12: olly
+	    [PHP] Avoid using zend_error_noreturn() as it doesn't work with all
+	    builds of PHP (SF bug #3166423).  Instead we now wrap it in a
+	    SWIG_FAIL() function which we annotate as "noreturn" for GCC to
+	    avoids warnings.  This also reduces the size of the compiled
+	    wrapper (e.g. the stripped size is reduced by 6% for Xapian's PHP
+	    bindings).
 
-            Also fixed other Lua error messages in generated code which weren't consistently
-            using the fully qualified C++ name - requested by Gedalia Pasternak.
+2012-05-11: wsfulton
+            [Java] SF patch #3522855 Fix unintended uninitialised memory access in OUTPUT typemaps.
 
-2011-04-29: szager
-	    Bug 2635919: Convenience method to convert std::map to a python dict.
+2012-05-11: wsfulton
+            [Java] SF patch #3522674 Fix possible uninitialised memory access in char **STRING_OUT
+            typemap.
 
-2011-04-29: szager
-	    [Python] Fixed bug 2811549: return non-const iterators from STL
-	    methods begin(), end(), rbegin(), rend().
+2012-05-11: wsfulton
+            [Java] SF patch #3522611 Fix uninitialised size regression in char **STRING_ARRAY
+            introduced in swig-2.0.6.
 
-2011-04-25: szager
-	    [Python] Fixed bug 1498929: Access to member fields in map elements
+2012-05-11: wsfulton
+            SF bug #3525050 - Fix regression introduced in swig-2.0.5 whereby defining one typemap
+            method such as an 'out' typemap may hide another typemap method such as an 'in' typemap -
+            only occurs when the type is a template type where the template parameters are the same
+            via a typedef.
 
-2011-04-23: klickverbot
-            [D] nspace: Correctly generate identifiers for base classes when
-            not in split proxy mode.
+2012-05-10: olly
+	    [PHP] Fix the constant typemaps for SWIGTYPE, etc - previously
+	    these used the wrong name for renamed constants.  Add
+	    autodoc_runme.php to the testsuite as a regression test for this.
 
-2011-04-13: szager
-	    Fixed bug 3286333: infinite recursion with mutual 'using namespace' clauses.
+2012-05-02: ianlancetaylor
+	    [Go] Remove compatibility support for gccgo 4.6.  Using
+	    SWIG with gccgo will now require gccgo 4.7.  Using SWIG
+	    with the more commonly used gc compiler is unaffected.
 
-2011-04-12: szager
-	    Fixed bug 1163440: vararg typemaps.
+2012-05-01: wsfulton
+            Fix generated code for C forward enum declarations in some languages.
 
-2011-04-12: szager
-	    Fixed bug #3285386: parse error from 'operator T*&()'.  Added operator_pointer_ref
-	    test case to demonstrate.
-
-2011-04-11: szager
-	    [Python] Fixed PyVarObject_HEAD_INIT to eliminate VC++ compiler errors about
-	    static initialization of struct members with pointers.
-
-2011-04-11: wsfulton
-            [Tcl] Apply patch #3284326 from Colin McDonald to fix some compiler warnings.
-
-2011-04-11: szager
-	    [Python] Fixed PyVarObject_HEAD_INIT to eliminate VC++ compiler errors about
-	    static initialization of struct members with pointers.
-
-2011-04-10: klickverbot
-            [D] Fixed wrapping of enums that are type char, for example:
-            enum { X = 'X'; } (this was already in 2.0.3 for C# and Java)
-
-2011-04-10: klickverbot
-            [D] nspace: Fixed referencing types in the root namespace when
-            not in split proxy mode.
-
-2011-04-09: szager
-	    [Python] Applied patch #1932484: migrate PyCObject to PyCapsule.
-
-2011-04-09: szager
-	    [Python] Added preprocessor guards for python functions PyUnicode_AsWideChar and
-	    PySlice_GetIndices, which changed signatures in python3.2.
-
-2011-04-07: wsfulton
-            Fix wrapping of const array typedefs which were generating uncompileable code as
-            reported by Karl Wette.
-
-2011-04-03: szager
-	    [Python] Fixed the behavior of %pythonnondynamic to conform to the spec in Lib/pyuserdir.swg.
-
-2011-04-03: szager
-	    [Python] Merged in the szager-python-builtin branch, adding the -builtin feature
-	    for python.  The -builtin option may provide a significant performance gain
-	    in python wrappers.  For full details and limitations, refer to Doc/Manual/Python.html.
-	    A small test suite designed to demonstrate the performance gain is in
-	    Examples/python/performance.
-
-2011-04-01: wsfulton
-            Add in missing wrappers for friend functions for some target languages, mostly
-            the non-scripting languages like Java and C#.

@@ -15,7 +15,7 @@
  * C identifiers up into keywords and SWIG directives.
  * ----------------------------------------------------------------------------- */
 
-char cvsroot_cscanner_c[] = "$Id: cscanner.c 12227 2010-09-24 22:13:13Z wsfulton $";
+char cvsroot_cscanner_c[] = "$Id: cscanner.c 12924 2012-03-15 20:32:14Z wsfulton $";
 
 #include "cparse.h"
 #include "parser.h"
@@ -767,6 +767,10 @@ int yylex(void) {
       }
       if (strcmp(yytext, "%includefile") == 0)
 	return (INCLUDE);
+      if (strcmp(yytext, "%beginfile") == 0)
+	return (BEGINFILE);
+      if (strcmp(yytext, "%endoffile") == 0)
+	return (ENDOFFILE);
       if (strcmp(yytext, "%val") == 0) {
 	Swig_warning(WARN_DEPRECATED_VAL, cparse_file, cparse_line, "%%val directive deprecated (ignored).\n");
 	return (yylex());

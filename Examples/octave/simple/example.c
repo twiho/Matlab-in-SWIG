@@ -15,11 +15,4 @@ int gcd(int x, int y) {
   return g;
 }
 
-int increment(){
-	return ++Foo;
-}
-
-int decrement(){
-	return --Foo;
-}
 

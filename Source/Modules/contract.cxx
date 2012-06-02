@@ -11,7 +11,7 @@
  * Support for Wrap by Contract in SWIG.
  * ----------------------------------------------------------------------------- */
 
-char cvsroot_contract_cxx[] = "$Id: contract.cxx 11876 2010-02-27 23:53:33Z wsfulton $";
+char cvsroot_contract_cxx[] = "$Id: contract.cxx 12830 2011-10-30 21:51:50Z wsfulton $";
 
 #include "swigmod.h"
 
@@ -213,7 +213,7 @@ String *Contracts::make_expression(String *s, Node *n) {
   for (ei = First(list_assert); ei.item; ei = Next(ei)) {
     expr = ei.item;
     if (Len(expr)) {
-      Replaceid(expr, Getattr(n, "name"), "result");
+      Replaceid(expr, Getattr(n, "name"), Swig_cresult_name());
       if (Len(str_assert))
 	Append(str_assert, "&&");
       Printf(str_assert, "(%s)", expr);

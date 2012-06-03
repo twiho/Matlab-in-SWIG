@@ -1,4 +1,6 @@
 #include "swigmod.h"
+#define DEBUG
+
 
 class MATLAB : public Language {
 
@@ -16,8 +18,9 @@ protected:
 
   bool ClassNameList_add(String* cppName, String* matlabName);
   String* ClassNameList_getMatlabName(String* cppName);
+#ifdef DEBUG
   void ClassNameList_print();
-	
+#endif
 
   File * f_begin;
   String * f_runtime;
@@ -36,7 +39,6 @@ public:
 
 };
 
-
 bool MATLAB::ClassNameList_add(String* cppName, String* matlabName) {
   if(ClassNameList.size == ClassNameList.capacity) {
     void* temp_ptr = realloc(ClassNameList.list, 2*ClassNameList.capacity*sizeof(ClassNameItem));
@@ -53,21 +55,20 @@ bool MATLAB::ClassNameList_add(String* cppName, String* matlabName) {
   return true;
 }
 
-
 String* MATLAB::ClassNameList_getMatlabName(String* cppName) {
   for(int i=0; i<ClassNameList.size; i++)
-    if(ClassNameList.list[i].cppName == cppName)
+    if(!Strcmp(ClassNameList.list[i].cppName,cppName))
       return ClassNameList.list[i].matlabName;
   return 0;
 }
 
-
+#ifdef DEBUG
 void MATLAB::ClassNameList_print() {
   Printf(stderr,"\nClassNames:\n");
   for(int i=0; i<ClassNameList.size; i++)
     Printf(stderr,"%s = %s",ClassNameList.list[i].cppName,ClassNameList.list[i].matlabName);
 }
-
+#endif
 
 int MATLAB::top(Node *n) {
 
@@ -132,10 +133,11 @@ void MATLAB::main(int argc, char *argv[]) {
 
   /* Set typemap language (historical) */
   SWIG_typemap_lang("matlab");
- 
+
+  /* Initialize ClassNameList */
   ClassNameList.list = (ClassNameItem*) malloc(10*sizeof(ClassNameItem));
   if(ClassNameList.list == 0)
-    exit(1);
+      SWIG_exit(EXIT_FAILURE);
   ClassNameList.size = 0;
   ClassNameList.capacity = 10;
 }

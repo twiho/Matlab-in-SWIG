@@ -183,6 +183,10 @@ int MATLAB::functionWrapper(Node *n) {
   }
 */
 
+  String* overloadTestStr1; // Exact type match
+  String* overloadTestStr2; // Type size mismatch
+  String* overloadTestStr3; // Necessary type conversion
+
   Printf(stderr,"functionWrapper   : %s\n", func);
   Printf(stderr,"           action : %s\n", action);
   return SWIG_OK;

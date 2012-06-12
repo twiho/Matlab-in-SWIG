@@ -75,9 +75,8 @@ void MATLAB::ClassNameList_print() {
 
 int MATLAB::top(Node *n) {
   module = Getattr(n,"name");
-  packageDirName = NewString("");
-  Printf(packageDirName,"+%s/",module);
-  Swig_new_subdirectory(NewString(""),packageDirName);
+  packageDirName = NewStringf("+%s/",module);
+  Swig_new_subdirectory(0,packageDirName);
    /* Initialize I/O */
     
     //fill outfile with out file name
@@ -154,8 +153,7 @@ int MATLAB::classHandler(Node* n) {
   String *mClass_fileName = NewString(packageDirName);
   String *cppClassName = Getattr(n,"classtype");
   String *matlabClassName = Getattr(n,"sym:name");
-  String *matlabFullClassName;
-  Printf(matlabFullClassName,"%s.",module);
+  String *matlabFullClassName = NewStringf(matlabFullClassName,"%s.",module);
   // Resolve namespaces
   if (Getattr(n,"feature:nspace")) {
     String* cppFullClassName = NewString(Getattr(n,"name"));
@@ -165,7 +163,7 @@ int MATLAB::classHandler(Node* n) {
       Printf(mClass_fileName,"+%s/",i.item);
       Printf(matlabFullClassName,"%s.",i.item);
       // creates directories for namespace packages
-      Swig_new_subdirectory(NewString(""),mClass_fileName);
+      Swig_new_subdirectory(0,mClass_fileName);
     }
   }
   Printf(mClass_fileName,"%s.m",matlabClassName);
@@ -183,8 +181,7 @@ int MATLAB::classHandler(Node* n) {
   }
 
   /* Matlab class header */
-  mClass_content = NewString("");
-  Printf(mClass_content,"classdef %s", matlabClassName);
+  mClass_content = NewStringf(mClass_content,"classdef %s", matlabClassName);
   // Resolving inheritance
   List *superClassList = Getattr(n, "allbases");
   int superClassCount = 0;

@@ -76,7 +76,7 @@ void MATLAB::ClassNameList_print() {
 int MATLAB::top(Node *n) {
   module = Getattr(n,"name");
   packageDirName = NewStringf("+%s/",module);
-  Swig_new_subdirectory(0,packageDirName);
+  Swig_new_subdirectory(NewStringEmpty(),packageDirName);
    /* Initialize I/O */
     
     //fill outfile with out file name
@@ -156,15 +156,17 @@ int MATLAB::classHandler(Node* n) {
   String *matlabFullClassName = NewStringf(matlabFullClassName,"%s.",module);
   // Resolve namespaces
   if (Getattr(n,"feature:nspace")) {
-    String* cppFullClassName = NewString(Getattr(n,"name"));
+    String* cppFullClassName = Getattr(n,"name");
     String* namespaces = Swig_scopename_prefix(cppFullClassName);
     List* namespaceList = Split(namespaces,':',-1);
     for (Iterator i = First(namespaceList); i.item; i = Next(i)) {
       Printf(mClass_fileName,"+%s/",i.item);
       Printf(matlabFullClassName,"%s.",i.item);
       // creates directories for namespace packages
-      Swig_new_subdirectory(0,mClass_fileName);
+      Swig_new_subdirectory(NewStringEmpty(),mClass_fileName);
     }
+    Delete(namespaces);
+    Delete(namespaceList);
   }
   Printf(mClass_fileName,"%s.m",matlabClassName);
   Printf(matlabFullClassName,"%s",matlabClassName);
@@ -198,6 +200,8 @@ int MATLAB::classHandler(Node* n) {
   } else {
     Printf(mClass_content," < handle & matlab.mixin.Heterogeneous");
   }
+  Delete(superClassList);
+  
   Printf(mClass_content, "\n\n");
   // Property for pointer to C++ object
   Printf(mClass_content, "    properties (GetAccess = private, SetAccess = private)\n");
@@ -213,7 +217,6 @@ int MATLAB::classHandler(Node* n) {
 
   Dump(mClass_content, mClass_file);
   Close(mClass_file);
-  Delete(mClass_content);
   Delete(mClass_file);
   Delete(mClass_fileName);
 

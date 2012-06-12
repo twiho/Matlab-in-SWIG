@@ -162,7 +162,7 @@ int MATLAB::classHandler(Node* n) {
   String *mClass_fileName = NewString(packageDirName);
   String *cppClassName = Getattr(n,"classtype");
   String *matlabClassName = Getattr(n,"sym:name");
-  String *matlabFullClassName = NewStringf(matlabFullClassName,"%s.",module);
+  String *matlabFullClassName = NewStringf("%s.",module);
   // Resolve namespaces
   if (Getattr(n,"feature:nspace")) {
     String* cppFullClassName = Getattr(n,"name");
@@ -192,7 +192,7 @@ int MATLAB::classHandler(Node* n) {
   }
 
   /* Matlab class header */
-  mClass_content = NewStringf(mClass_content,"classdef %s", matlabClassName);
+  mClass_content = NewStringf("classdef %s", matlabClassName);
   // Resolving inheritance
   List *superClassList = Getattr(n, "allbases");
   int superClassCount = 0;

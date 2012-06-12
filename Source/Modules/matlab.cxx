@@ -144,17 +144,18 @@ void MATLAB::main(int argc, char *argv[]) {
 
 
 int MATLAB::classHandler(Node* n) {
+  // Getting class names
   String *cppClassName = Getattr(n,"classtype");
   String *matlabClassName = Getattr(n,"sym:name");
   String *matlabFullClassName;
   // TODO resolve possible %nspace feature
   Printf(matlabFullClassName,"%s.%s",module,matlabClassName);
-  // register class
   ClassNameList_add(cppClassName,matlabFullClassName);
 #ifdef DEBUG
   Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabClassName);
 #endif
 
+  /* Creating file for Matlab class */
   String *mClass_fileName = NewString("");
   Printf(mClass_fileName,"%s.m",matlabClassName);
   // TODO create module folder
@@ -166,24 +167,34 @@ int MATLAB::classHandler(Node* n) {
 
   /* Matlab class header */
   mClass_content = NewString("");
+  Printf(mClass_content,"classdef %s", matlabClassName);
   // Resolving inheritance
-  Printf(mClass_content,"classdef %s < ", matlabClassName);
   List *superClassList = Getattr(n, "allbases");
   int superClassCount = 0;
   if (superClassList) {
     for (Iterator b = First(superClassList); b.item; b = Next(b)) {
       String *cppSuperClassName = Getattr(b.item, "classtype");
       String *matlabFullSuperClassName = ClassNameList_getMatlabFullName(cppSuperClassName);
-      Printf(mClass_content,"%s%s",(superClassCount?" & ":""),matlabFullSuperClassName);
+      Printf(mClass_content," %s %s",(superClassCount?"&":"<"),matlabFullSuperClassName);
       superClassCount++;
 #ifdef DEBUG
       Printf(stderr,"Inherites: %s\n",matlabBaseClassName);
 #endif
     }
   } else {
-    Printf(mClass_content,"handle & matlab.mixin.Heterogeneous");
+    Printf(mClass_content," < handle & matlab.mixin.Heterogeneous");
   }
   Printf(mClass_content, "\n\n");
+  // Property for pointer to C++ object
+  Printf(mClass_content, "    properties (GetAccess = private, SetAccess = private)\n");
+  Printf(mClass_content, "        pointer\n");
+  Printf(mClass_content, "    end\n\n");
+  // Method for getting the pointer
+  Printf(mClass_content, "    methods\n");
+  Printf(mClass_content, "        function [retVal] = getPointer(this)\n");
+  Printf(mClass_content, "            retVal = this.pointer;\n");
+  Printf(mClass_content, "        end\n");
+
   //Language::classHandler(n); //poresi nam ruzne gety a sety a konstruktory atp
 
   Dump(mClass_content, mClass_file);

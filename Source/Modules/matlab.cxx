@@ -247,7 +247,7 @@ int MATLAB::functionWrapper(Node *n) {
 
     String *matlabFunctionName = Getattr(n,"sym:name");
     
-    String *mFunction_content;
+    String *mFunction_content = NewString("");
   
 /*
     File * mClass_file = NewFile(mClass_fileName, "w", SWIG_output_files());

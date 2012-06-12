@@ -77,6 +77,7 @@ int MATLAB::top(Node *n) {
   module = Getattr(n,"name");
   packageDirName = NewString("");
   Printf(packageDirName,"+%s/",module);
+  Swig_new_subdirectory(NewString(""),packageDirName);
    /* Initialize I/O */
     
     //fill outfile with out file name

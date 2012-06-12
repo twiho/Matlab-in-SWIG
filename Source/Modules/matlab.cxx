@@ -230,6 +230,8 @@ int MATLAB::classHandler(Node* n) {
   Delete(mClass_fileName);
 
   flags.inClass = false;
+
+  return SWIG_OK;
 }
 
 

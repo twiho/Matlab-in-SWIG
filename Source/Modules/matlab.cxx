@@ -22,6 +22,10 @@ protected:
   void ClassNameList_print();
 #endif
 
+  struct {
+      bool inClass;
+  } flags;
+
   File * f_begin;
   String * f_runtime;
   String * f_init;
@@ -77,6 +81,10 @@ int MATLAB::top(Node *n) {
   module = Getattr(n,"name");
   packageDirName = NewStringf("+%s/",module);
   Swig_new_subdirectory(NewStringEmpty(),packageDirName);
+  
+  /* Initialize flags */
+  flags.inClass = false;
+
    /* Initialize I/O */
     
     //fill outfile with out file name
@@ -149,6 +157,7 @@ void MATLAB::main(int argc, char *argv[]) {
 
 
 int MATLAB::classHandler(Node* n) {
+  flags.inClass = true;
   /* Getting class names and file path */
   String *mClass_fileName = NewString(packageDirName);
   String *cppClassName = Getattr(n,"classtype");
@@ -220,6 +229,7 @@ int MATLAB::classHandler(Node* n) {
   Delete(mClass_file);
   Delete(mClass_fileName);
 
+  flags.inClass = false;
 }
 
 

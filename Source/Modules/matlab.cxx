@@ -75,6 +75,8 @@ void MATLAB::ClassNameList_print() {
 
 int MATLAB::top(Node *n) {
   module = Getattr(n,"name");
+  packageDirName = NewString("");
+  Printf(packageDirName,"+%s/",module);
    /* Initialize I/O */
     
     //fill outfile with out file name
@@ -148,11 +150,10 @@ void MATLAB::main(int argc, char *argv[]) {
 
 int MATLAB::classHandler(Node* n) {
   /* Getting class names and file path */
-  String *mClass_fileName = NewString("");
+  String *mClass_fileName = NewString(packageDirName);
   String *cppClassName = Getattr(n,"classtype");
   String *matlabClassName = Getattr(n,"sym:name");
   String *matlabFullClassName;
-  Printf(mClass_fileName,"+%s/",module);
   Printf(matlabFullClassName,"%s.",module);
   // Resolve namespaces
   if (Getattr(n,"feature:nspace")) {

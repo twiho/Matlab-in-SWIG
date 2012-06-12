@@ -28,6 +28,9 @@ protected:
   String * f_header;
   String * f_wrappers;
 
+  String *module;
+  String *packageDirName;
+
   String * mClass_content;
 
 public:
@@ -39,7 +42,7 @@ public:
 
 };
 
-bool MATLAB::ClassNameList_add(String* cppName, String* matlabFulName) {
+bool MATLAB::ClassNameList_add(String* cppName, String* matlabFullName) {
   if(ClassNameList.size == ClassNameList.capacity) {
     void* temp_ptr = realloc(ClassNameList.list, 2*ClassNameList.capacity*sizeof(ClassNameItem));
     if(temp_ptr == 0)
@@ -66,12 +69,12 @@ String* MATLAB::ClassNameList_getMatlabFullName(String* cppName) {
 void MATLAB::ClassNameList_print() {
   Printf(stderr,"\nClassNames:\n");
   for(int i=0; i<ClassNameList.size; i++)
-    Printf(stderr,"%s = %s",ClassNameList.list[i].cppName,ClassNameList.list[i].matlabName);
+    Printf(stderr,"%s = %s",ClassNameList.list[i].cppName,ClassNameList.list[i].matlabFullName);
 }
 #endif
 
 int MATLAB::top(Node *n) {
-
+  module = Getattr(n,"name");
    /* Initialize I/O */
     
     //fill outfile with out file name
@@ -167,7 +170,7 @@ int MATLAB::classHandler(Node* n) {
   Printf(matlabFullClassName,"%s",matlabClassName);
   ClassNameList_add(cppClassName,matlabFullClassName);
 #ifdef DEBUG
-  Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabClassName);
+  Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);
 #endif
 
   /* Creating file for Matlab class */
@@ -190,7 +193,7 @@ int MATLAB::classHandler(Node* n) {
       Printf(mClass_content," %s %s",(superClassCount?"&":"<"),matlabFullSuperClassName);
       superClassCount++;
 #ifdef DEBUG
-      Printf(stderr,"Inherites: %s\n",matlabBaseClassName);
+      Printf(stderr,"Inherites: %s\n",matlabFullSuperClassName);
 #endif
     }
   } else {

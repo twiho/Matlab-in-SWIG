@@ -144,25 +144,37 @@ void MATLAB::main(int argc, char *argv[]) {
 
 
 int MATLAB::classHandler(Node* n) {
-  // Getting class names
+  /* Getting class names and file path */
+  String *mClass_fileName = NewString("");
   String *cppClassName = Getattr(n,"classtype");
   String *matlabClassName = Getattr(n,"sym:name");
   String *matlabFullClassName;
-  // TODO resolve possible %nspace feature
-  Printf(matlabFullClassName,"%s.%s",module,matlabClassName);
+  Printf(mClass_fileName,"+%s/",module);
+  Printf(matlabFullClassName,"%s.",module);
+  // Resolve namespaces
+  if (Getattr(n,"feature:nspace")) {
+    String* cppFullClassName = NewString(Getattr(n,"name"));
+    String* namespaces = Swig_scopename_prefix(cppFullClassName);
+    List* namespaceList = Split(namespaces,':',-1);
+    for (Iterator i = First(namespaceList); i.item; i = Next(i)) {
+      Printf(mClass_fileName,"+%s/",i.item);
+      Printf(matlabFullClassName,"%s.",i.item);
+      // creates directories for namespace packages
+      Swig_new_subdirectory(NewString(""),mClass_fileName);
+    }
+  }
+  Printf(mClass_fileName,"%s.m",matlabClassName);
+  Printf(matlabFullClassName,"%s",matlabClassName);
   ClassNameList_add(cppClassName,matlabFullClassName);
 #ifdef DEBUG
   Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabClassName);
 #endif
 
   /* Creating file for Matlab class */
-  String *mClass_fileName = NewString("");
-  Printf(mClass_fileName,"%s.m",matlabClassName);
-  // TODO create module folder
-  File *mClass_file = NewFile(mClass_fileName, "w", SWIG_output_files());
+  File *mClass_file = NewFile(mClass_fileName,"w",SWIG_output_files());
   if (!mClass_file) {
-     FileErrorDisplay(mClass_file);
-     SWIG_exit(EXIT_FAILURE);
+    FileErrorDisplay(mClass_file);
+    SWIG_exit(EXIT_FAILURE);
   }
 
   /* Matlab class header */
@@ -172,8 +184,8 @@ int MATLAB::classHandler(Node* n) {
   List *superClassList = Getattr(n, "allbases");
   int superClassCount = 0;
   if (superClassList) {
-    for (Iterator b = First(superClassList); b.item; b = Next(b)) {
-      String *cppSuperClassName = Getattr(b.item, "classtype");
+    for (Iterator i = First(superClassList); i.item; i = Next(i)) {
+      String *cppSuperClassName = Getattr(i.item, "classtype");
       String *matlabFullSuperClassName = ClassNameList_getMatlabFullName(cppSuperClassName);
       Printf(mClass_content," %s %s",(superClassCount?"&":"<"),matlabFullSuperClassName);
       superClassCount++;

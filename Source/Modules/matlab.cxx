@@ -7,7 +7,7 @@ class MATLAB : public Language {
 protected:
   typedef struct {
     String* cppName;
-    String* matlabName;
+    String* matlabFullName;
   } ClassNameItem;
 
   struct {
@@ -17,7 +17,7 @@ protected:
   } ClassNameList;
 
   bool ClassNameList_add(String* cppName, String* matlabName);
-  String* ClassNameList_getMatlabName(String* cppName);
+  String* ClassNameList_getMatlabFullName(String* cppName);
 #ifdef DEBUG
   void ClassNameList_print();
 #endif
@@ -39,7 +39,7 @@ public:
 
 };
 
-bool MATLAB::ClassNameList_add(String* cppName, String* matlabName) {
+bool MATLAB::ClassNameList_add(String* cppName, String* matlabFulName) {
   if(ClassNameList.size == ClassNameList.capacity) {
     void* temp_ptr = realloc(ClassNameList.list, 2*ClassNameList.capacity*sizeof(ClassNameItem));
     if(temp_ptr == 0)
@@ -49,16 +49,16 @@ bool MATLAB::ClassNameList_add(String* cppName, String* matlabName) {
   }
   ClassNameItem newClassNameItem;
   newClassNameItem.cppName = cppName;
-  newClassNameItem.matlabName = matlabName;
+  newClassNameItem.matlabFullName = matlabFullName;
   ClassNameList.list[ClassNameList.size] = newClassNameItem;
   ClassNameList.size++;
   return true;
 }
 
-String* MATLAB::ClassNameList_getMatlabName(String* cppName) {
+String* MATLAB::ClassNameList_getMatlabFullName(String* cppName) {
   for(int i=0; i<ClassNameList.size; i++)
     if(!Strcmp(ClassNameList.list[i].cppName,cppName))
-      return ClassNameList.list[i].matlabName;
+      return ClassNameList.list[i].matlabFullName;
   return 0;
 }
 
@@ -144,18 +144,46 @@ void MATLAB::main(int argc, char *argv[]) {
 
 
 int MATLAB::classHandler(Node* n) {
-  String   *name   = Getattr(n,"sym:name");
-  Printf(stderr,"classWrapper   : %s\n", name);
+  String *cppClassName = Getattr(n,"classtype");
+  String *matlabClassName = Getattr(n,"sym:name");
+  String *matlabFullClassName;
+  // TODO resolve possible %nspace feature
+  Printf(matlabFullClassName,"%s.%s",module,matlabClassName);
+  // register class
+  ClassNameList_add(cppClassName,matlabFullClassName);
+#ifdef DEBUG
+  Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabClassName);
+#endif
 
-  String * mClass_fileName = NewString("jmenoTridy.m"); //?
-  File * mClass_file = NewFile(mClass_fileName, "w", SWIG_output_files());
+  String *mClass_fileName = NewString("");
+  Printf(mClass_fileName,"%s.m",matlabClassName);
+  // TODO create module folder
+  File *mClass_file = NewFile(mClass_fileName, "w", SWIG_output_files());
   if (!mClass_file) {
      FileErrorDisplay(mClass_file);
      SWIG_exit(EXIT_FAILURE);
   }
 
-  mClass_content=NewString(""); //sem se zapise mfile pro tridu
-
+  /* Matlab class header */
+  mClass_content = NewString("");
+  // Resolving inheritance
+  Printf(mClass_content,"classdef %s < ", matlabClassName);
+  List *superClassList = Getattr(n, "allbases");
+  int superClassCount = 0;
+  if (superClassList) {
+    for (Iterator b = First(superClassList); b.item; b = Next(b)) {
+      String *cppSuperClassName = Getattr(b.item, "classtype");
+      String *matlabFullSuperClassName = ClassNameList_getMatlabFullName(cppSuperClassName);
+      Printf(mClass_content,"%s%s",(superClassCount?" & ":""),matlabFullSuperClassName);
+      superClassCount++;
+#ifdef DEBUG
+      Printf(stderr,"Inherites: %s\n",matlabBaseClassName);
+#endif
+    }
+  } else {
+    Printf(mClass_content,"handle & matlab.mixin.Heterogeneous");
+  }
+  Printf(mClass_content, "\n\n");
   //Language::classHandler(n); //poresi nam ruzne gety a sety a konstruktory atp
 
   Dump(mClass_content, mClass_file);

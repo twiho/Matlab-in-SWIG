@@ -174,8 +174,8 @@ int MATLAB::classHandler(Node* n) {
       // creates directories for namespace packages
       Swig_new_subdirectory(NewStringEmpty(),mClass_fileName);
     }
-    Delete(namespaces);
     Delete(namespaceList);
+    Delete(namespaces);
   }
   Printf(mClass_fileName,"%s.m",matlabClassName);
   Printf(matlabFullClassName,"%s",matlabClassName);

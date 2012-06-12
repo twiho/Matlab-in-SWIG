@@ -234,27 +234,62 @@ int MATLAB::classHandler(Node* n) {
 
 
 int MATLAB::functionWrapper(Node *n) {
-  /* Get some useful attributes of this function */
-  String   *name   = Getattr(n,"sym:name");
-  SwigType *type   = Getattr(n,"type");
-  ParmList *parms  = Getattr(n,"parms");
-  String   *parmstr= ParmList_str_defaultargs(parms); // to string
-  String   *func   = SwigType_str(type, NewStringf("%s(%s)", name, parmstr));
-  String   *action = Getattr(n,"wrap:action");
+  if (!Getattr(n, "sym:nextSibling")) {
+    /* Get some useful attributes of this function */
+    String   *name   = Getattr(n,"sym:name");
+    SwigType *type   = Getattr(n,"type");
+    ParmList *parms  = Getattr(n,"parms");
+    String   *parmstr= ParmList_str_defaultargs(parms); // to string
+    String   *func   = SwigType_str(type, NewStringf("%s(%s)", name, parmstr));
+    String   *action = Getattr(n,"wrap:action");
+
+    String *matlabFunctionName = Getattr(n,"sym:name");
+    
+    String *mFunction_content;
+  
 /*
-  File * mClass_file = NewFile(mClass_fileName, "w", SWIG_output_files());
-  if (!mClass_file) {
-     FileErrorDisplay(mClass_file);
-     SWIG_exit(EXIT_FAILURE);
+    File * mClass_file = NewFile(mClass_fileName, "w", SWIG_output_files());
+    if (!mClass_file) {
+      FileErrorDisplay(mClass_file);
+      SWIG_exit(EXIT_FAILURE);
   }
 */
 
-  String* overloadTestStr1; // Exact type match
-  String* overloadTestStr2; // Type size mismatch
-  String* overloadTestStr3; // Necessary type conversion
+    String* overloadTestStr1; // Exact type match
+    String* overloadTestStr2; // Type size mismatch
+    String* overloadTestStr3; // Necessary type conversion
 
-  Printf(stderr,"functionWrapper   : %s\n", func);
-  Printf(stderr,"           action : %s\n", action);
+    Printf(stderr,"functionWrapper   : %s\n", func);
+    Printf(stderr,"           action : %s\n", action);
+  
+    if (flags.inClass) {
+      // TODO add indentation to mFunction_content
+      Append(mClass_content,mFunction_content);
+    } else {
+      String *mFunction_fileName = NewString(packageDirName);
+      if(Getattr(n,"feature:nspace")) {
+        String* cppFullFunctionName = Getattr(n,"name");
+        String* namespaces = Swig_scopename_prefix(cppFullFunctionName);
+        List* namespaceList = Split(cppFullFunctionName,':',-1);
+        for (Iterator i = First(namespaceList); i.item; i = Next(i)) {
+          Printf(mFunction_fileName,"+%s/",i.item);
+          Swig_new_subdirectory(NewStringEmpty(),mFunction_fileName);
+        }
+        Delete(namespaceList);
+        Delete(namespaces);
+      }
+      Printf(mFunction_fileName,"%s.m",matlabFunctionName);
+      File *mFunction_file = NewFile(mFunction_fileName,"w",SWIG_output_files());
+      if (!mFunction_file) {
+        FileErrorDisplay(mFunction_fileName);
+        SWIG_exit(EXIT_FAILURE);
+      }
+      Dump(mFunction_content,mFunction_file);
+      Close(mFunction_file);
+      Delete(mFunction_fileName);
+    }
+    Delete(mFunction_content);
+  }
   return SWIG_OK;
 }
 

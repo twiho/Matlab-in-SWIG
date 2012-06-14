@@ -22,6 +22,10 @@ protected:
   void ClassNameList_print();
 #endif
 
+  bool generateCppBaseClass(String *filePath);
+  bool generateCppPointerClass(String *filePath);
+  bool generateCppDummyPointerClass(String *filePath);
+
   struct {
       bool inClass;
   } flags;
@@ -76,6 +80,67 @@ void MATLAB::ClassNameList_print() {
     Printf(stderr,"%s = %s",ClassNameList.list[i].cppName,ClassNameList.list[i].matlabFullName);
 }
 #endif
+
+bool MATLAB::generateCppBaseClass(String *filePath) {
+  String *fileName = NewStringf("%sCppBaseClass",filePath);
+  String* code = NewString("");
+  Printf(code,"classdef CppBaseClass < handle\n\n");
+  Printf(code,"    properties (GetAccess = public, SetAccess = protected)\n");
+  Printf(code,"        pointer;\n");
+  Printf(code,"    end\n");
+  Printf(code,"end\n");
+  File *mFile = NewFile(fileName,"w",SWIG_output_files());
+  if (!mFile) {
+    FileErrorDisplay(mFile);
+    SWIG_exit(EXIT_FAILURE);
+  }
+  Dump(code,mFil);
+  Close(mFile);
+  Delete(code);
+  Delete(fileName);
+}
+
+bool MATLAB::generateCppPointerClass(String *filePath) {
+  String *fileName = NewStringf("%sCppPointerClass",filePath);
+  String* code = NewString("");
+  Printf(code,"classdef CppPointerClass\n\n");
+  Printf(code,"    properties (GetAccess = public, SetAccess = private)\n");
+  Printf(code,"        pointer;\n");
+  Printf(code,"    end\n");
+  Printf(code,"\n");
+  Printf(code,"    methods\n");
+  Printf(code,"        function this = CppPointerClass(p)\n");
+  Printf(code,"            if nargin ~= 1 || ~isa(p,'lib.pointer')\n");
+  Printf(code,"                error('Illegal constructor call');\n");
+  Printf(code,"            end\n");
+  Printf(code,"            this.pointer = p;\n");
+  Printf(code,"        end\n");
+  Printf(code,"    end\n");
+  Printf(code,"end\n");
+  File *mFile = NewFile(fileName,"w",SWIG_output_files());
+  if (!mFile) {
+    FileErrorDisplay(mFile);
+    SWIG_exit(EXIT_FAILURE);
+  }
+  Dump(code,mFil);
+  Close(mFile);
+  Delete(code);
+  Delete(fileName);
+}
+
+bool MATLAB::generateCppDummyPointerClass(String *filePath) {
+  String *fileName = NewStringf("%sCppDummyPointerClass",filePath);
+  String *code = NewString("classdef CppDummyPointerClass\nend\n");
+  File *mFile = NewFile(fileName,"w",SWIG_output_files());
+  if (!mFile) {
+    FileErrorDisplay(mFile);
+    SWIG_exit(EXIT_FAILURE);
+  }
+  Dump(code,mFil);
+  Close(mFile);
+  Delete(code);
+  Delete(fileName);
+}
 
 int MATLAB::top(Node *n) {
   module = Getattr(n,"name");

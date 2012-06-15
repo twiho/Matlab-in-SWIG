@@ -19,7 +19,7 @@
 /* Typemaps for compatible matlab data type */
 
 %typemap(compatible) bool                                             "logical"
-%typemap(compatible) char, signed char, unsigned char,
+%typemap(compatible) byte, char, signed char, unsigned char,
                      short, signed short, unsigned short,
                      int, signed, signed int, unsigned int,
                      long, signed long, unsigned long,

@@ -30,6 +30,7 @@ protected:
   void generateCppDummyPointerClass(String *filePath);
 
   String *getMatlabType(Parm *p, int typeType);
+  bool isClassType(Parm *p);
 
   struct {
       bool isCpp;
@@ -167,6 +168,17 @@ String *MATLAB::getMatlabType(Parm *p, int typeType) {
   return 0;
 }
 
+bool MATLAB::isClassType(Parm *p) {
+  SwigType *type = Getattr(p,"type");
+  String *name = Getattr(p,"name");
+  while (SwigType_isreference(type))
+    SwigType_del_reference(type);
+  while (SwigType_ispointer(type))
+    SwigType_del_pointer(type);
+  Parm *p2 = NewParm(type,name,p);
+  return Swig_typemap_lookup("isclass",p2,"",0)?true:false;
+}
+
 int MATLAB::top(Node *n) {
   module = Getattr(n,"name");
   packageDirName = NewStringf("+%s/",module);
@@ -289,6 +301,8 @@ int MATLAB::classHandler(Node* n) {
   Parm *classParm = NewParm(cppClassName,0,n);
   Swig_typemap_register("mexact",classParm,matlabFullClassName,0,0);
   Swig_typemap_register("mcompatible",classParm,matlabFullClassName,0,0);
+  Swig_typemap_register("mfree",classParm,matlabFullClassName,0,0);
+  Swig_typemap_register("isclass",classParm,NewStringEmpty(),0,0);
   //delete(classParm);
   ClassNameList_add(cppClassName,matlabFullClassName);
 #ifdef DEBUG
@@ -341,12 +355,6 @@ int MATLAB::classHandler(Node* n) {
 
 
 int MATLAB::functionWrapper(Node *n) {
-
-    /* return matlab type equivalent to C++ return type
-    String* pokus = Swig_typemap_lookup("mexact",n,"",0);
-    if(pokus)
-        Printf(stderr,">>>%s<<<\n",pokus);
-    */
 
   if (!Getattr(n, "sym:nextSibling")) {
     /* Get some useful attributes of this function */

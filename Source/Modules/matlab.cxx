@@ -29,6 +29,8 @@ protected:
   void generateCppPointerClass(String *filePath);
   void generateCppDummyPointerClass(String *filePath);
 
+  String *getMatlabType(Parm *p, int typeType);
+
   struct {
       bool isCpp;
       bool inClass;
@@ -144,6 +146,25 @@ void MATLAB::generateCppDummyPointerClass(String *filePath) {
   Close(mFile);
   Delete(code);
   Delete(fileName);
+}
+
+String *MATLAB::getMatlabType(Parm *p, int typeType) {
+  SwigType *type = Getattr(p,"type");
+  String *name = Getattr(p,"name");
+  while (SwigType_isreference(type))
+    SwigType_del_reference(type);
+  while (SwigType_ispointer(type))
+    SwigType_del_pointer(type);
+  Parm *p2 = NewParm(type,name,p);
+  switch(typeType) {
+      case MEXACT:
+        return Swig_typemap_lookup("mexact",p2,"",0);
+      case MCOMPATIBLE:
+        return Swig_typemap_lookup("mcompatible",p2,"",0);
+      case MFREE:
+        return Swig_typemap_lookup("mfree",p2,"",0);
+  }
+  return 0;
 }
 
 int MATLAB::top(Node *n) {
@@ -268,7 +289,7 @@ int MATLAB::classHandler(Node* n) {
   Parm *classParm = NewParm(cppClassName,0,n);
   Swig_typemap_register("mexact",classParm,matlabFullClassName,0,0);
   Swig_typemap_register("mcompatible",classParm,matlabFullClassName,0,0);
-  delete(classParm);
+  //delete(classParm);
   ClassNameList_add(cppClassName,matlabFullClassName);
 #ifdef DEBUG
   Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);

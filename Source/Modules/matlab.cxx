@@ -22,11 +22,12 @@ protected:
   void ClassNameList_print();
 #endif
 
-  bool generateCppBaseClass(String *filePath);
-  bool generateCppPointerClass(String *filePath);
-  bool generateCppDummyPointerClass(String *filePath);
+  void generateCppBaseClass(String *filePath);
+  void generateCppPointerClass(String *filePath);
+  void generateCppDummyPointerClass(String *filePath);
 
   struct {
+      bool isCpp;
       bool inClass;
   } flags;
 
@@ -81,10 +82,10 @@ void MATLAB::ClassNameList_print() {
 }
 #endif
 
-bool MATLAB::generateCppBaseClass(String *filePath) {
-  String *fileName = NewStringf("%sCppBaseClass",filePath);
+void MATLAB::generateCppBaseClass(String *filePath) {
+  String *fileName = NewStringf("%sCppBaseClass.m",filePath?filePath:"");
   String* code = NewString("");
-  Printf(code,"classdef CppBaseClass < handle\n\n");
+  Printf(code,"classdef CppBaseClass < handle\n");
   Printf(code,"    properties (GetAccess = public, SetAccess = protected)\n");
   Printf(code,"        pointer;\n");
   Printf(code,"    end\n");
@@ -94,16 +95,16 @@ bool MATLAB::generateCppBaseClass(String *filePath) {
     FileErrorDisplay(mFile);
     SWIG_exit(EXIT_FAILURE);
   }
-  Dump(code,mFil);
+  Dump(code,mFile);
   Close(mFile);
   Delete(code);
   Delete(fileName);
 }
 
-bool MATLAB::generateCppPointerClass(String *filePath) {
-  String *fileName = NewStringf("%sCppPointerClass",filePath);
+void MATLAB::generateCppPointerClass(String *filePath) {
+  String *fileName = NewStringf("%sCppPointerClass.m",filePath?filePath:"");
   String* code = NewString("");
-  Printf(code,"classdef CppPointerClass\n\n");
+  Printf(code,"classdef CppPointerClass\n");
   Printf(code,"    properties (GetAccess = public, SetAccess = private)\n");
   Printf(code,"        pointer;\n");
   Printf(code,"    end\n");
@@ -122,21 +123,21 @@ bool MATLAB::generateCppPointerClass(String *filePath) {
     FileErrorDisplay(mFile);
     SWIG_exit(EXIT_FAILURE);
   }
-  Dump(code,mFil);
+  Dump(code,mFile);
   Close(mFile);
   Delete(code);
   Delete(fileName);
 }
 
-bool MATLAB::generateCppDummyPointerClass(String *filePath) {
-  String *fileName = NewStringf("%sCppDummyPointerClass",filePath);
+void MATLAB::generateCppDummyPointerClass(String *filePath) {
+  String *fileName = NewStringf("%sCppDummyPointerClass.m",filePath?filePath:"");
   String *code = NewString("classdef CppDummyPointerClass\nend\n");
   File *mFile = NewFile(fileName,"w",SWIG_output_files());
   if (!mFile) {
     FileErrorDisplay(mFile);
     SWIG_exit(EXIT_FAILURE);
   }
-  Dump(code,mFil);
+  Dump(code,mFile);
   Close(mFile);
   Delete(code);
   Delete(fileName);
@@ -146,6 +147,13 @@ int MATLAB::top(Node *n) {
   module = Getattr(n,"name");
   packageDirName = NewStringf("+%s/",module);
   Swig_new_subdirectory(NewStringEmpty(),packageDirName);
+  
+  // Generates matlab base classes
+  if(flags.isCpp) {
+      generateCppBaseClass(0);
+      generateCppPointerClass(0);
+      generateCppDummyPointerClass(0);
+  }
   
   /* Initialize flags */
   flags.inClass = false;
@@ -200,6 +208,16 @@ int MATLAB::top(Node *n) {
 
 
 void MATLAB::main(int argc, char *argv[]) {
+  //this block serves argument tagging and processing
+  flags.isCpp = false;
+  for (int i = 1; i < argc; i++) {
+    if (argv[i]) {
+      if(strcmp(argv[i],"-c++") == 0) {
+          flags.isCpp = true;
+      }
+    }
+  }
+    
   /* Set language-specific subdirectory in SWIG library */
   SWIG_library_directory("matlab");
 

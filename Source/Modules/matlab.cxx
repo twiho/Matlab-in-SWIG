@@ -262,6 +262,10 @@ int MATLAB::classHandler(Node* n) {
   }
   Printf(mClass_fileName,"%s.m",matlabClassName);
   Printf(matlabFullClassName,"%s",matlabClassName);
+  Parm *classParm = NewParm(cppClassName,0,n);
+  Swig_typemap_register("exact",classParm,matlabFullClassName,0,0);
+  Swig_typemap_register("compatible",classParm,matlabFullClassName,0,0);
+  delete(classParm);
   ClassNameList_add(cppClassName,matlabFullClassName);
 #ifdef DEBUG
   Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);

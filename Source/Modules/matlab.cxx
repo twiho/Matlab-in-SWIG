@@ -313,6 +313,13 @@ int MATLAB::classHandler(Node* n) {
 
 
 int MATLAB::functionWrapper(Node *n) {
+
+    /* return matlab type equivalent to C++ return type
+    String* pokus = Swig_typemap_lookup("exact",n,"",0);
+    if(pokus)
+        Printf(stderr,">>>%s<<<\n",pokus);
+    */
+
   if (!Getattr(n, "sym:nextSibling")) {
     /* Get some useful attributes of this function */
     String   *name   = Getattr(n,"sym:name");

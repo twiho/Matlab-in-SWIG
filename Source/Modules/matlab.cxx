@@ -290,21 +290,15 @@ int MATLAB::classHandler(Node* n) {
 #endif
     }
   } else {
-    Printf(mClass_content," < handle & matlab.mixin.Heterogeneous");
+    Printf(mClass_content," < CppBaseClass");
   }
   Delete(superClassList);
   
-  Printf(mClass_content, "\n\n");
+  Printf(mClass_content, "\n");
   // Property for pointer to C++ object
   Printf(mClass_content, "    properties (GetAccess = private, SetAccess = private)\n");
-  Printf(mClass_content, "        pointer\n");
+  Printf(mClass_content, "        callDestructor = false;\n");
   Printf(mClass_content, "    end\n\n");
-  // Method for getting the pointer
-  Printf(mClass_content, "    methods\n");
-  Printf(mClass_content, "        function [retVal] = getPointer(this)\n");
-  Printf(mClass_content, "            retVal = this.pointer;\n");
-  Printf(mClass_content, "        end\n");
-
   //Language::classHandler(n); //poresi nam ruzne gety a sety a konstruktory atp
 
   Dump(mClass_content, mClass_file);

@@ -1,6 +1,9 @@
 #include "swigmod.h"
 #define DEBUG
 
+#define MEXACT 1
+#define MCOMPATIBLE 2
+#define MFREE 3
 
 class MATLAB : public Language {
 
@@ -263,8 +266,8 @@ int MATLAB::classHandler(Node* n) {
   Printf(mClass_fileName,"%s.m",matlabClassName);
   Printf(matlabFullClassName,"%s",matlabClassName);
   Parm *classParm = NewParm(cppClassName,0,n);
-  Swig_typemap_register("exact",classParm,matlabFullClassName,0,0);
-  Swig_typemap_register("compatible",classParm,matlabFullClassName,0,0);
+  Swig_typemap_register("mexact",classParm,matlabFullClassName,0,0);
+  Swig_typemap_register("mcompatible",classParm,matlabFullClassName,0,0);
   delete(classParm);
   ClassNameList_add(cppClassName,matlabFullClassName);
 #ifdef DEBUG
@@ -319,7 +322,7 @@ int MATLAB::classHandler(Node* n) {
 int MATLAB::functionWrapper(Node *n) {
 
     /* return matlab type equivalent to C++ return type
-    String* pokus = Swig_typemap_lookup("exact",n,"",0);
+    String* pokus = Swig_typemap_lookup("mexact",n,"",0);
     if(pokus)
         Printf(stderr,">>>%s<<<\n",pokus);
     */

@@ -4,6 +4,7 @@
 #define MEXACT 1
 #define MCOMPATIBLE 2
 #define MFREE 3
+#define MCLASS 4
 
 class MATLAB : public Language {
 
@@ -157,6 +158,9 @@ String *MATLAB::getMatlabType(Parm *p, int typeType) {
   while (SwigType_ispointer(type))
     SwigType_del_pointer(type);
   Parm *p2 = NewParm(type,name,p);
+  String *mClass = Swig_typemap_lookup("mclass",p2,"",0);
+  if(mClass)
+      return mClass;
   switch(typeType) {
       case MEXACT:
         return Swig_typemap_lookup("mexact",p2,"",0);
@@ -299,10 +303,7 @@ int MATLAB::classHandler(Node* n) {
   Printf(mClass_fileName,"%s.m",matlabClassName);
   Printf(matlabFullClassName,"%s",matlabClassName);
   Parm *classParm = NewParm(cppClassName,0,n);
-  Swig_typemap_register("mexact",classParm,matlabFullClassName,0,0);
-  Swig_typemap_register("mcompatible",classParm,matlabFullClassName,0,0);
-  Swig_typemap_register("mfree",classParm,matlabFullClassName,0,0);
-  Swig_typemap_register("isclass",classParm,NewStringEmpty(),0,0);
+  Swig_typemap_register("mclass",classParm,matlabFullClassName,0,0);
   //delete(classParm);
   ClassNameList_add(cppClassName,matlabFullClassName);
 #ifdef DEBUG

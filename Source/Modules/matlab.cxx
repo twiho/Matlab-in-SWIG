@@ -9,17 +9,18 @@
 class MATLAB : public Language {
 
 protected:
+
+  struct {
+      bool isCpp;
+      bool inClass;
+  } flags;
+
   void generateCppBaseClass(String *filePath);
   void generateCppPointerClass(String *filePath);
   void generateCppDummyPointerClass(String *filePath);
 
   String *getMatlabType(Parm *p, int typeType);
   bool isClassType(Parm *p);
-
-  struct {
-      bool isCpp;
-      bool inClass;
-  } flags;
 
   File * f_begin;
   String * f_runtime;

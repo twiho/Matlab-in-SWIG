@@ -9,23 +9,6 @@
 class MATLAB : public Language {
 
 protected:
-  typedef struct {
-    String* cppName;
-    String* matlabFullName;
-  } ClassNameItem;
-
-  struct {
-    int size;
-    int capacity;
-    ClassNameItem* list;
-  } ClassNameList;
-
-  bool ClassNameList_add(String* cppName, String* matlabName);
-  String* ClassNameList_getMatlabFullName(String* cppName);
-#ifdef DEBUG
-  void ClassNameList_print();
-#endif
-
   void generateCppBaseClass(String *filePath);
   void generateCppPointerClass(String *filePath);
   void generateCppDummyPointerClass(String *filePath);
@@ -57,37 +40,6 @@ public:
   int functionWrapper(Node *n);
 
 };
-
-bool MATLAB::ClassNameList_add(String* cppName, String* matlabFullName) {
-  if(ClassNameList.size == ClassNameList.capacity) {
-    void* temp_ptr = realloc(ClassNameList.list, 2*ClassNameList.capacity*sizeof(ClassNameItem));
-    if(temp_ptr == 0)
-      return false;
-    ClassNameList.list = (ClassNameItem*) temp_ptr;
-    ClassNameList.capacity *= 2;
-  }
-  ClassNameItem newClassNameItem;
-  newClassNameItem.cppName = cppName;
-  newClassNameItem.matlabFullName = matlabFullName;
-  ClassNameList.list[ClassNameList.size] = newClassNameItem;
-  ClassNameList.size++;
-  return true;
-}
-
-String* MATLAB::ClassNameList_getMatlabFullName(String* cppName) {
-  for(int i=0; i<ClassNameList.size; i++)
-    if(!Strcmp(ClassNameList.list[i].cppName,cppName))
-      return ClassNameList.list[i].matlabFullName;
-  return 0;
-}
-
-#ifdef DEBUG
-void MATLAB::ClassNameList_print() {
-  Printf(stderr,"\nClassNames:\n");
-  for(int i=0; i<ClassNameList.size; i++)
-    Printf(stderr,"%s = %s",ClassNameList.list[i].cppName,ClassNameList.list[i].matlabFullName);
-}
-#endif
 
 void MATLAB::generateCppBaseClass(String *filePath) {
   String *fileName = NewStringf("%sCppBaseClass.m",filePath?filePath:"");
@@ -270,12 +222,6 @@ void MATLAB::main(int argc, char *argv[]) {
   /* Set typemap language (historical) */
   SWIG_typemap_lang("matlab");
 
-  /* Initialize ClassNameList */
-  ClassNameList.list = (ClassNameItem*) malloc(10*sizeof(ClassNameItem));
-  if(ClassNameList.list == 0)
-      SWIG_exit(EXIT_FAILURE);
-  ClassNameList.size = 0;
-  ClassNameList.capacity = 10;
 }
 
 
@@ -305,7 +251,6 @@ int MATLAB::classHandler(Node* n) {
   Parm *classParm = NewParm(cppClassName,0,n);
   Swig_typemap_register("mclass",classParm,matlabFullClassName,0,0);
   //delete(classParm);
-  ClassNameList_add(cppClassName,matlabFullClassName);
 #ifdef DEBUG
   Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);
 #endif
@@ -325,7 +270,8 @@ int MATLAB::classHandler(Node* n) {
   if (superClassList) {
     for (Iterator i = First(superClassList); i.item; i = Next(i)) {
       String *cppSuperClassName = Getattr(i.item, "classtype");
-      String *matlabFullSuperClassName = ClassNameList_getMatlabFullName(cppSuperClassName);
+      Parm* classParm = NewParm(cppSuperClassName,0,n);
+      String *matlabFullSuperClassName = getMatlabType(classParm,MCLASS);
       Printf(mClass_content," %s %s",(superClassCount?"&":"<"),matlabFullSuperClassName);
       superClassCount++;
 #ifdef DEBUG

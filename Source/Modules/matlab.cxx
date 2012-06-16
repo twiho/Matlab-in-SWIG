@@ -20,7 +20,6 @@ protected:
   void generateCppDummyPointerClass(String *filePath);
 
   String *getMatlabType(Parm *p, int *pointerCount, int *referenceCount, int typeType);
-  bool isClassType(Parm *p);
 
   File * f_begin;
   String * f_runtime;
@@ -133,17 +132,6 @@ String *MATLAB::getMatlabType(Parm *p, int *pointerCount, int *referenceCount, i
         return Swig_typemap_lookup("mfree",p2,"",0);
   }
   return 0;
-}
-
-bool MATLAB::isClassType(Parm *p) {
-  SwigType *type = Getattr(p,"type");
-  String *name = Getattr(p,"name");
-  while (SwigType_isreference(type))
-    SwigType_del_reference(type);
-  while (SwigType_ispointer(type))
-    SwigType_del_pointer(type);
-  Parm *p2 = NewParm(type,name,p);
-  return Swig_typemap_lookup("isclass",p2,"",0)?true:false;
 }
 
 int MATLAB::top(Node *n) {

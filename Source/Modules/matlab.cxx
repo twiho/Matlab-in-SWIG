@@ -19,7 +19,7 @@ protected:
   void generateCppPointerClass(String *filePath);
   void generateCppDummyPointerClass(String *filePath);
 
-  String *getMatlabType(Parm *p, int typeType);
+  String *getMatlabType(Parm *p, int *pointerCount, int *referenceCount, int typeType);
   bool isClassType(Parm *p);
 
   File * f_begin;
@@ -103,13 +103,23 @@ void MATLAB::generateCppDummyPointerClass(String *filePath) {
   Delete(fileName);
 }
 
-String *MATLAB::getMatlabType(Parm *p, int typeType) {
+String *MATLAB::getMatlabType(Parm *p, int *pointerCount, int *referenceCount, int typeType) {
   SwigType *type = Getattr(p,"type");
   String *name = Getattr(p,"name");
-  while (SwigType_isreference(type))
-    SwigType_del_reference(type);
-  while (SwigType_ispointer(type))
+  if(pointerCount != 0)
+    *pointerCount = 0;
+  while (SwigType_ispointer(type)) {
     SwigType_del_pointer(type);
+    if(pointerCount != 0)
+      *pointerCount += 1;
+  }
+  if(referenceCount != 0)
+    *referenceCount = 0;
+  while (SwigType_isreference(type)) {
+    SwigType_del_reference(type);
+    if(referenceCount != 0)
+      *referenceCount += 1;
+  }
   Parm *p2 = NewParm(type,name,p);
   String *mClass = Swig_typemap_lookup("mclass",p2,"",0);
   if(mClass)
@@ -278,7 +288,7 @@ int MATLAB::classHandler(Node* n) {
       for (Iterator i = First(superClassList); i.item; i = Next(i)) {
         String *cppSuperClassName = Getattr(i.item, "classtype");
         Parm* classParm = NewParm(cppSuperClassName,0,n);
-        String *matlabFullSuperClassName = getMatlabType(classParm,MCLASS);
+        String *matlabFullSuperClassName = getMatlabType(classParm,0,0,MCLASS);
         Printf(mClass_content," %s %s",(superClassCount?"&":"<"),matlabFullSuperClassName);
         superClassCount++;
 #ifdef DEBUG
@@ -295,7 +305,7 @@ int MATLAB::classHandler(Node* n) {
     Printf(mClass_content, "    properties (GetAccess = private, SetAccess = private)\n");
     Printf(mClass_content, "        callDestructor = false;\n");
     Printf(mClass_content, "    end\n\n");
-    //Language::classHandler(n); //poresi nam ruzne gety a sety a konstruktory atp
+    Language::classHandler(n); //poresi nam ruzne gety a sety a konstruktory atp
 
     Dump(mClass_content, mClass_file);
     Close(mClass_file);

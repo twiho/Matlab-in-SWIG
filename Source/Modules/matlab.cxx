@@ -13,6 +13,8 @@ protected:
   struct {
       bool isCpp;
       bool inClass;
+      bool inConstructor;
+      bool inDestructor;
   } flags;
 
   void generateCppBaseClass(String *filePath);
@@ -37,6 +39,8 @@ public:
   virtual void main(int argc, char *argv[]);
   virtual int top(Node *n);
   int classHandler(Node *n);
+  int constructorHandler(Node *n);
+  int destructorHandler(Node *n);
   int functionWrapper(Node *n);
 
 };
@@ -139,6 +143,8 @@ String *MATLAB::getMatlabType(Parm *p, int *pointerCount, int *referenceCount, i
 void MATLAB::main(int argc, char *argv[]) {
   flags.isCpp = false;
   flags.inClass = false;
+  flags.inConstructor = false;
+  flags.inDestructor = false;
   /* Parsing command line arguments */
   for (int i = 1; i < argc; i++) {
     if (argv[i]) {
@@ -303,6 +309,26 @@ int MATLAB::classHandler(Node* n) {
 
     flags.inClass = false;
   }
+  return SWIG_OK;
+}
+
+int MATLAB::constructorHandler(Node *n) {
+#ifdef MATLABPRINTFUNCTIONENTRY
+  Printf(stderr,"Entering constructorHandler\n");
+#endif
+  flags.inConstructor = true;
+  Language::constructorHandler(n);
+  flags.inConstructor = false;
+  return SWIG_OK;
+}
+
+int MATLAB::destructorHandler(Node *n) {
+#ifdef MATLABPRINTFUNCTIONENTRY
+  Printf(stderr,"Entering destructorHandler\n");
+#endif
+  flags.inDestructor = true;
+  Language::destructorHandler(n);
+  flags.inDestructor = false;
   return SWIG_OK;
 }
 

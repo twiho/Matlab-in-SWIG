@@ -41,6 +41,7 @@ public:
 
 };
 
+/*** Matlab module function ***/
 void MATLAB::generateCppBaseClass(String *filePath) {
   String *fileName = NewStringf("%sCppBaseClass.m",filePath?filePath:"");
   String* code = NewString("");
@@ -134,6 +135,34 @@ String *MATLAB::getMatlabType(Parm *p, int *pointerCount, int *referenceCount, i
   return 0;
 }
 
+/*** Main function ***/
+void MATLAB::main(int argc, char *argv[]) {
+  flags.isCpp = false;
+  flags.inClass = false;
+  /* Parsing command line arguments */
+  for (int i = 1; i < argc; i++) {
+    if (argv[i]) {
+      if(strcmp(argv[i],"-c++") == 0) {
+          flags.isCpp = true;
+      }
+    }
+  }
+    
+  /* Set language-specific subdirectory in SWIG library */
+  SWIG_library_directory("matlab");
+
+  /* Set language-specific preprocessing symbol */
+  Preprocessor_define("SWIGMATLAB 1", 0);
+
+  /* Set language-specific configuration file */
+  SWIG_config_file("matlab.swg");
+
+  /* Set typemap language (historical) */
+  SWIG_typemap_lang("matlab");
+
+}
+
+/*** Function for tree parsing ***/
 int MATLAB::top(Node *n) {
   module = Getattr(n,"name");
   packageDirName = NewStringf("+%s/",module);
@@ -197,34 +226,6 @@ int MATLAB::top(Node *n) {
   return SWIG_OK;
 }
 
-
-void MATLAB::main(int argc, char *argv[]) {
-  //this block serves argument tagging and processing
-  flags.isCpp = false;
-  for (int i = 1; i < argc; i++) {
-    if (argv[i]) {
-      if(strcmp(argv[i],"-c++") == 0) {
-          flags.isCpp = true;
-      }
-    }
-  }
-    
-  /* Set language-specific subdirectory in SWIG library */
-  SWIG_library_directory("matlab");
-
-  /* Set language-specific preprocessing symbol */
-  Preprocessor_define("SWIGMATLAB 1", 0);
-
-  /* Set language-specific configuration file */
-  SWIG_config_file("matlab.swg");
-
-  /* Set typemap language (historical) */
-  SWIG_typemap_lang("matlab");
-
-}
-
-
-
 int MATLAB::classHandler(Node* n) {
   String* kind = Getattr(n,"kind");
   if(!Strcmp(kind,"struct")) {
@@ -237,7 +238,7 @@ int MATLAB::classHandler(Node* n) {
     String *cppClassName = Getattr(n,"classtype");
     String *matlabClassName = Getattr(n,"sym:name");
     String *matlabFullClassName = NewStringf("%s.",module);
-    // Resolve namespaces
+    /* Resolving namespaces */
     if (Getattr(n,"feature:nspace")) {
       String* cppFullClassName = Getattr(n,"name");
       String* namespaces = Swig_scopename_prefix(cppFullClassName);
@@ -245,7 +246,7 @@ int MATLAB::classHandler(Node* n) {
       for (Iterator i = First(namespaceList); i.item; i = Next(i)) {
         Printf(mClass_fileName,"+%s/",i.item);
         Printf(matlabFullClassName,"%s.",i.item);
-        // creates directories for namespace packages
+        /* Creating directories for namespace packages */
         Swig_new_subdirectory(NewStringEmpty(),mClass_fileName);
       }
       Delete(namespaceList);
@@ -269,7 +270,7 @@ int MATLAB::classHandler(Node* n) {
 
     /* Matlab class header */
     mClass_content = NewStringf("classdef %s", matlabClassName);
-    // Resolving inheritance
+    /* Resolving inheritance */
     List *superClassList = Getattr(n, "allbases");
     int superClassCount = 0;
     if (superClassList) {
@@ -305,9 +306,9 @@ int MATLAB::classHandler(Node* n) {
   return SWIG_OK;
 }
 
-
 int MATLAB::functionWrapper(Node *n) {
 
+  /* Generating wrapper after parsing all overloaded functions */
   if (!Getattr(n, "sym:nextSibling")) {
     /* Get some useful attributes of this function */
     String   *name   = Getattr(n,"sym:name");
@@ -329,10 +330,6 @@ int MATLAB::functionWrapper(Node *n) {
   }
 */
 
-    String* overloadTestStr1; // Exact type match
-    String* overloadTestStr2; // Type size mismatch
-    String* overloadTestStr3; // Necessary type conversion
-
     Printf(stderr,"functionWrapper   : %s\n", func);
     Printf(stderr,"           action : %s\n", action);
   
@@ -340,6 +337,7 @@ int MATLAB::functionWrapper(Node *n) {
       // TODO add indentation to mFunction_content
       Append(mClass_content,mFunction_content);
     } else {
+      /* Resolving namespaces */
       String *mFunction_fileName = NewString(packageDirName);
       if(Getattr(n,"feature:nspace")) {
         String* cppFullFunctionName = Getattr(n,"name");
@@ -352,6 +350,7 @@ int MATLAB::functionWrapper(Node *n) {
         Delete(namespaceList);
         Delete(namespaces);
       }
+      /* Creating function M-file */
       Printf(mFunction_fileName,"%s.m",matlabFunctionName);
       File *mFunction_file = NewFile(mFunction_fileName,"w",SWIG_output_files());
       if (!mFunction_file) {
@@ -366,7 +365,6 @@ int MATLAB::functionWrapper(Node *n) {
   }
   return SWIG_OK;
 }
-
 
 extern "C" Language *
 swig_matlab(void) {

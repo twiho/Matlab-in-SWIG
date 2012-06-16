@@ -225,78 +225,84 @@ void MATLAB::main(int argc, char *argv[]) {
 }
 
 
+
 int MATLAB::classHandler(Node* n) {
-  flags.inClass = true;
-  /* Getting class names and file path */
-  String *mClass_fileName = NewString(packageDirName);
-  String *cppClassName = Getattr(n,"classtype");
-  String *matlabClassName = Getattr(n,"sym:name");
-  String *matlabFullClassName = NewStringf("%s.",module);
-  // Resolve namespaces
-  if (Getattr(n,"feature:nspace")) {
-    String* cppFullClassName = Getattr(n,"name");
-    String* namespaces = Swig_scopename_prefix(cppFullClassName);
-    List* namespaceList = Split(namespaces,':',-1);
-    for (Iterator i = First(namespaceList); i.item; i = Next(i)) {
-      Printf(mClass_fileName,"+%s/",i.item);
-      Printf(matlabFullClassName,"%s.",i.item);
-      // creates directories for namespace packages
-      Swig_new_subdirectory(NewStringEmpty(),mClass_fileName);
-    }
-    Delete(namespaceList);
-    Delete(namespaces);
+  String* kind = Getattr(n,"kind");
+  if(!Strcmp(kind,"struct")) {
+    //TODO copy the declaration to header file
   }
-  Printf(mClass_fileName,"%s.m",matlabClassName);
-  Printf(matlabFullClassName,"%s",matlabClassName);
-  Parm *classParm = NewParm(cppClassName,0,n);
-  Swig_typemap_register("mclass",classParm,matlabFullClassName,0,0);
-  //delete(classParm);
+  if(!Strcmp(kind,"class")) {
+    flags.inClass = true;
+    /* Getting class names and file path */
+    String *mClass_fileName = NewString(packageDirName);
+    String *cppClassName = Getattr(n,"classtype");
+    String *matlabClassName = Getattr(n,"sym:name");
+    String *matlabFullClassName = NewStringf("%s.",module);
+    // Resolve namespaces
+    if (Getattr(n,"feature:nspace")) {
+      String* cppFullClassName = Getattr(n,"name");
+      String* namespaces = Swig_scopename_prefix(cppFullClassName);
+      List* namespaceList = Split(namespaces,':',-1);
+      for (Iterator i = First(namespaceList); i.item; i = Next(i)) {
+        Printf(mClass_fileName,"+%s/",i.item);
+        Printf(matlabFullClassName,"%s.",i.item);
+        // creates directories for namespace packages
+        Swig_new_subdirectory(NewStringEmpty(),mClass_fileName);
+      }
+      Delete(namespaceList);
+      Delete(namespaces);
+    }
+    Printf(mClass_fileName,"%s.m",matlabClassName);
+    Printf(matlabFullClassName,"%s",matlabClassName);
+    Parm *classParm = NewParm(cppClassName,0,n);
+    Swig_typemap_register("mclass",classParm,matlabFullClassName,0,0);
+    //delete(classParm);
 #ifdef DEBUG
-  Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);
+    Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);
 #endif
 
-  /* Creating file for Matlab class */
-  File *mClass_file = NewFile(mClass_fileName,"w",SWIG_output_files());
-  if (!mClass_file) {
-    FileErrorDisplay(mClass_file);
-    SWIG_exit(EXIT_FAILURE);
-  }
-
-  /* Matlab class header */
-  mClass_content = NewStringf("classdef %s", matlabClassName);
-  // Resolving inheritance
-  List *superClassList = Getattr(n, "allbases");
-  int superClassCount = 0;
-  if (superClassList) {
-    for (Iterator i = First(superClassList); i.item; i = Next(i)) {
-      String *cppSuperClassName = Getattr(i.item, "classtype");
-      Parm* classParm = NewParm(cppSuperClassName,0,n);
-      String *matlabFullSuperClassName = getMatlabType(classParm,MCLASS);
-      Printf(mClass_content," %s %s",(superClassCount?"&":"<"),matlabFullSuperClassName);
-      superClassCount++;
-#ifdef DEBUG
-      Printf(stderr,"Inherites: %s\n",matlabFullSuperClassName);
-#endif
+    /* Creating file for Matlab class */
+    File *mClass_file = NewFile(mClass_fileName,"w",SWIG_output_files());
+    if (!mClass_file) {
+      FileErrorDisplay(mClass_file);
+      SWIG_exit(EXIT_FAILURE);
     }
-  } else {
-    Printf(mClass_content," < CppBaseClass");
-  }
-  Delete(superClassList);
+
+    /* Matlab class header */
+    mClass_content = NewStringf("classdef %s", matlabClassName);
+    // Resolving inheritance
+    List *superClassList = Getattr(n, "allbases");
+    int superClassCount = 0;
+    if (superClassList) {
+      for (Iterator i = First(superClassList); i.item; i = Next(i)) {
+        String *cppSuperClassName = Getattr(i.item, "classtype");
+        Parm* classParm = NewParm(cppSuperClassName,0,n);
+        String *matlabFullSuperClassName = getMatlabType(classParm,MCLASS);
+        Printf(mClass_content," %s %s",(superClassCount?"&":"<"),matlabFullSuperClassName);
+        superClassCount++;
+#ifdef DEBUG
+        Printf(stderr,"Inherites: %s\n",matlabFullSuperClassName);
+#endif
+      }
+    } else {
+      Printf(mClass_content," < CppBaseClass");
+    }
+    Delete(superClassList);
   
-  Printf(mClass_content, "\n");
-  // Property for pointer to C++ object
-  Printf(mClass_content, "    properties (GetAccess = private, SetAccess = private)\n");
-  Printf(mClass_content, "        callDestructor = false;\n");
-  Printf(mClass_content, "    end\n\n");
-  //Language::classHandler(n); //poresi nam ruzne gety a sety a konstruktory atp
+    Printf(mClass_content, "\n");
+    // Property for pointer to C++ object
+    Printf(mClass_content, "    properties (GetAccess = private, SetAccess = private)\n");
+    Printf(mClass_content, "        callDestructor = false;\n");
+    Printf(mClass_content, "    end\n\n");
+    //Language::classHandler(n); //poresi nam ruzne gety a sety a konstruktory atp
 
-  Dump(mClass_content, mClass_file);
-  Close(mClass_file);
-  Delete(mClass_file);
-  Delete(mClass_fileName);
+    Dump(mClass_content, mClass_file);
+    Close(mClass_file);
+    Delete(mClass_file);
+    Delete(mClass_fileName);
 
-  flags.inClass = false;
-
+    flags.inClass = false;
+  }
   return SWIG_OK;
 }
 

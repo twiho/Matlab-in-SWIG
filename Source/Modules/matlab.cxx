@@ -70,10 +70,12 @@ void MATLAB::insertMatlabClass(const_String_or_char_ptr className) {
 
 void MATLAB::insertMatlabClasses() {
   if (flags.isDebugging)
-    Printf(stdout,"Inserting BaseMatlabClasses\n");
+    Printf(stdout,"INSERTING BASE MATLAB CLASSES:\n");
   insertMatlabClass("CppBaseClass");
   insertMatlabClass("CppPointerClass");
   insertMatlabClass("CppDummyPointerClass");
+  if (flags.isDebugging)
+    Printf(stdout,"BASE MATLAB CLASSES INSERTED\n");
 }
 
 String *MATLAB::generateLibisloadedTest() {
@@ -276,7 +278,7 @@ int MATLAB::classHandler(Node* n) {
     Swig_typemap_register("mclass",classParm,matlabFullClassName,0,0);
     //delete(classParm);
     if (flags.isDebugging)
-      Printf(stdout,"Parsing class: %s -> %s\n",cppClassName,matlabFullClassName);
+      Printf(stdout,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);
 
     /* Creating file for Matlab class */
     File *mClass_file = NewFile(mClass_fileName,"w",SWIG_output_files());
@@ -323,6 +325,8 @@ int MATLAB::classHandler(Node* n) {
     Delete(mClass_fileName);
 
     flags.inClass = false;
+    if (flags.isDebugging)
+      Printf(stdout,"CLASS PARSED\n");
   }
   return SWIG_OK;
 }

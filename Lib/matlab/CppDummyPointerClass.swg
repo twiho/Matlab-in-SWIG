@@ -1,0 +1,2 @@
+classdef CppDummyPointerClass
+end %classdef

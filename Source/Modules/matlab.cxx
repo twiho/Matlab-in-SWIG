@@ -17,9 +17,8 @@ protected:
     bool inDestructor;
   } flags;
 
-  void generateCppBaseClass(String *filePath);
-  void generateCppPointerClass(String *filePath);
-  void generateCppDummyPointerClass(String *filePath);
+  void insertMatlabClass(const_String_or_char_ptr className);
+  void insertMatlabClasses();
 
   String *generateLibisloadedTest();
   String *generateMFunctionContent(Node *n);
@@ -52,73 +51,29 @@ public:
 };
 
 /*** Matlab module function ***/
-void MATLAB::generateCppBaseClass(String *filePath) {
+
+void MATLAB::insertMatlabClass(const_String_or_char_ptr className) {
   if (flags.isDebugging)
-    Printf(stdout,"Generating CppBaseClass\n");
-  String *fileName = NewStringf("%sCppBaseClass.m",filePath?filePath:"");
-  String* code = NewString("");
-  Printf(code,"classdef CppBaseClass < handle\n\n");
-  Printf(code,"properties (GetAccess = public, SetAccess = protected)\n");
-  Printf(code,"    pointer;\n");
-  Printf(code,"end\n");
-  Printf(code,"\n");
-  Printf(code,"end %%classdef\n");
-  File *mFile = NewFile(fileName,"w",SWIG_output_files());
-  if (!mFile) {
-    FileErrorDisplay(mFile);
+    Printf(stdout,"Inserting %s\n",className);
+  String *matlabClassFileName = NewStringf("%s.m",className);
+  String *matlabClassSourceFileName = NewStringf("%s.swg",className);
+  File *matlabClassFile = NewFile(matlabClassFileName,"w",SWIG_output_files());
+  if (!matlabClassFile) {
+    FileErrorDisplay(matlabClassFile);
     SWIG_exit(EXIT_FAILURE);
   }
-  Dump(code,mFile);
-  Close(mFile);
-  Delete(code);
-  Delete(fileName);
+  Swig_insert_file(matlabClassSourceFileName, matlabClassFile);
+  Close(matlabClassFile);
+  Delete(matlabClassFileName);
+  Delete(matlabClassSourceFileName);
 }
 
-void MATLAB::generateCppPointerClass(String *filePath) {
+void MATLAB::insertMatlabClasses() {
   if (flags.isDebugging)
-    Printf(stdout,"Generating CppPointerClass\n");
-  String *fileName = NewStringf("%sCppPointerClass.m",filePath?filePath:"");
-  String* code = NewString("");
-  Printf(code,"classdef CppPointerClass\n\n");
-  Printf(code,"properties (GetAccess = public, SetAccess = private)\n");
-  Printf(code,"    pointer;\n");
-  Printf(code,"end\n");
-  Printf(code,"\n");
-  Printf(code,"methods\n");
-  Printf(code,"function this = CppPointerClass(p)\n");
-  Printf(code,"    if nargin ~= 1 || ~isa(p,'lib.pointer')\n");
-  Printf(code,"        error('Illegal constructor call');\n");
-  Printf(code,"    end\n");
-  Printf(code,"    this.pointer = p;\n");
-  Printf(code,"end\n");
-  Printf(code,"end\n");
-  Printf(code,"\n");
-  Printf(code,"end %%classdef\n");
-  File *mFile = NewFile(fileName,"w",SWIG_output_files());
-  if (!mFile) {
-    FileErrorDisplay(mFile);
-    SWIG_exit(EXIT_FAILURE);
-  }
-  Dump(code,mFile);
-  Close(mFile);
-  Delete(code);
-  Delete(fileName);
-}
-
-void MATLAB::generateCppDummyPointerClass(String *filePath) {
-  if (flags.isDebugging)
-    Printf(stdout,"Generating CppDummyPointerClass\n");
-  String *fileName = NewStringf("%sCppDummyPointerClass.m",filePath?filePath:"");
-  String *code = NewString("classdef CppDummyPointerClass\nend %classdef\n");
-  File *mFile = NewFile(fileName,"w",SWIG_output_files());
-  if (!mFile) {
-    FileErrorDisplay(mFile);
-    SWIG_exit(EXIT_FAILURE);
-  }
-  Dump(code,mFile);
-  Close(mFile);
-  Delete(code);
-  Delete(fileName);
+    Printf(stdout,"Inserting BaseMatlabClasses\n");
+  insertMatlabClass("CppBaseClass");
+  insertMatlabClass("CppPointerClass");
+  insertMatlabClass("CppDummyPointerClass");
 }
 
 String *MATLAB::generateLibisloadedTest() {
@@ -232,9 +187,7 @@ int MATLAB::top(Node *n) {
   libraryFileName = NewStringf("lib%s",module);
   // Generates matlab base classes
   if (flags.isCpp) {
-    generateCppBaseClass(0);
-    generateCppPointerClass(0);
-    generateCppDummyPointerClass(0);
+    insertMatlabClasses();
   }
   
   /* Initialize flags */

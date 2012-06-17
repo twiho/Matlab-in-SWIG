@@ -36,7 +36,8 @@ protected:
   String *packageDirName;
   String *libraryFileName;
 
-  String * mClass_content;
+  String *mClass_content;
+  String *superClassConstructorCalls;
 
 public:
 
@@ -133,8 +134,18 @@ String *MATLAB::generateMFunctionContent(Node *n) {
     }
     Printf(mFunction_content,"function %s(varargin)\n",Getattr(n,"matlab:name"));
     Append(mFunction_content,generateLibisloadedTest());
-    
-    
+    if (flags.inConstructor) {
+      Append(mFunction_content,superClassConstructorCalls);
+      Printf(mFunction_content,"    if nargin == 1 && isa(varargin{1},'CppDummyPointerClass')\n");
+      Printf(mFunction_content,"        return;\n");
+      Printf(mFunction_content,"    end\n");
+      Printf(mFunction_content,"    if nargin == 1 && isa(varargin{1},'CppPointerClass')\n");
+      Printf(mFunction_content,"        this.pointer = varargin{1}.pointer;\n");
+      Printf(mFunction_content,"        callDestructor = true;\n");
+      Printf(mFunction_content,"        return;\n");
+      Printf(mFunction_content,"    end\n");
+    }
+    Printf(mFunction_content,"    error('Illegal function call');\n");
     Printf(mFunction_content,"end\n");
     return mFunction_content;
   }
@@ -314,12 +325,14 @@ int MATLAB::classHandler(Node* n) {
     /* Resolving inheritance */
     List *superClassList = Getattr(n, "allbases");
     int superClassCount = 0;
+    superClassConstructorCalls = NewString("");
     if (superClassList) {
       for (Iterator i = First(superClassList); i.item; i = Next(i)) {
         String *cppSuperClassName = Getattr(i.item, "classtype");
         Parm* classParm = NewParm(cppSuperClassName,0,n);
         String *matlabFullSuperClassName = getMatlabType(classParm,0,0,MCLASS);
         Printf(mClass_content," %s %s",(superClassCount?"&":"<"),matlabFullSuperClassName);
+        Printf(superClassConstructorCalls,"    this = this@%s(Dummy);\n",matlabFullSuperClassName);
         superClassCount++;
 #ifdef DEBUG
         Printf(stderr,"Inherites: %s\n",matlabFullSuperClassName);
@@ -338,7 +351,9 @@ int MATLAB::classHandler(Node* n) {
     Language::classHandler(n); //poresi nam ruzne gety a sety a konstruktory atp
     Printf(mClass_content, "end %%classdef\n");
 
-    Dump(mClass_content, mClass_file);
+    Clear(superClassConstructorCalls);
+
+    Dump(mClass_content,mClass_file);
     Close(mClass_file);
     Delete(mClass_file);
     Delete(mClass_fileName);
@@ -361,6 +376,7 @@ int MATLAB::constructorHandler(Node *n) {
 #ifdef MATLABPRINTFUNCTIONENTRY
   Printf(stderr,"Entering constructorHandler\n");
 #endif
+  Setattr(n,"matlab:name",Getattr(n,"sym:name"));
   flags.inConstructor = true;
   Language::constructorHandler(n);
   flags.inConstructor = false;

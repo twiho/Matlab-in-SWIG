@@ -53,6 +53,8 @@ public:
 
 /*** Matlab module function ***/
 void MATLAB::generateCppBaseClass(String *filePath) {
+  if (flags.isDebugging)
+      Printf(stdout,"Generating CppBaseClass\n");
   String *fileName = NewStringf("%sCppBaseClass.m",filePath?filePath:"");
   String* code = NewString("");
   Printf(code,"classdef CppBaseClass < handle\n\n");
@@ -73,6 +75,8 @@ void MATLAB::generateCppBaseClass(String *filePath) {
 }
 
 void MATLAB::generateCppPointerClass(String *filePath) {
+  if (flags.isDebugging)
+      Printf(stdout,"Generating CppPointerClass\n");
   String *fileName = NewStringf("%sCppPointerClass.m",filePath?filePath:"");
   String* code = NewString("");
   Printf(code,"classdef CppPointerClass\n\n");
@@ -102,6 +106,8 @@ void MATLAB::generateCppPointerClass(String *filePath) {
 }
 
 void MATLAB::generateCppDummyPointerClass(String *filePath) {
+  if (flags.isDebugging)
+      Printf(stdout,"Generating CppDummyPointerClass\n");
   String *fileName = NewStringf("%sCppDummyPointerClass.m",filePath?filePath:"");
   String *code = NewString("classdef CppDummyPointerClass\nend %classdef\n");
   File *mFile = NewFile(fileName,"w",SWIG_output_files());
@@ -318,7 +324,7 @@ int MATLAB::classHandler(Node* n) {
     Swig_typemap_register("mclass",classParm,matlabFullClassName,0,0);
     //delete(classParm);
     if(flags.isDebugging)
-      Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);
+      Printf(stdout,"Parsing class: %s -> %s\n",cppClassName,matlabFullClassName);
 
     /* Creating file for Matlab class */
     File *mClass_file = NewFile(mClass_fileName,"w",SWIG_output_files());
@@ -342,7 +348,7 @@ int MATLAB::classHandler(Node* n) {
         Printf(superClassConstructorCalls,"    this = this@%s(Dummy);\n",matlabFullSuperClassName);
         superClassCount++;
         if(flags.isDebugging)
-        Printf(stderr,"Inherites: %s\n",matlabFullSuperClassName);
+        Printf(stdout,"Inherites: %s\n",matlabFullSuperClassName);
       }
     } else {
       Printf(mClass_content," < CppBaseClass");
@@ -414,7 +420,7 @@ int MATLAB::functionWrapper(Node *n) {
     String *mFunction_content = generateMFunctionContent(n);
   
     if(flags.isDebugging)
-      Printf(stderr,"PARSING FUNCTION: %s\n",matlabFunctionName);
+      Printf(stdout,"Parsing function: %s\n",matlabFunctionName);
 
     
 /*
@@ -424,10 +430,10 @@ int MATLAB::functionWrapper(Node *n) {
       SWIG_exit(EXIT_FAILURE);
   }
 */
-
+#ifdef DEBUG
     Printf(stderr,"functionWrapper   : %s\n", func);
     Printf(stderr,"           action : %s\n", action);
-
+#endif
   if(mFunction_content) {
     if (flags.inClass) {
       String *function_declarations = NewString("methods");

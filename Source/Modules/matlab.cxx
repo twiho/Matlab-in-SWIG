@@ -123,6 +123,7 @@ String *MATLAB::generateLibisloadedTest() {
 }
 
 String *MATLAB::generateMFunctionContent(Node *n) {
+  /* Generating wrapper after parsing all overloaded functions */
   if (!Getattr(n, "sym:nextSibling")) {
     String *mFunction_content = NewString("");
     if (flags.inDestructor) {
@@ -396,8 +397,6 @@ int MATLAB::destructorHandler(Node *n) {
 }
 
 int MATLAB::functionWrapper(Node *n) {
-
-  /* Generating wrapper after parsing all overloaded functions */
   
     /* Get some useful attributes of this function */
     String   *name   = Getattr(n,"sym:name");

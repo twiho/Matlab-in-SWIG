@@ -290,14 +290,13 @@ int MATLAB::top(Node *n) {
 }
 
 int MATLAB::classHandler(Node* n) {
-  String* kind = Getattr(n,"kind");
-  if (checkAttribute(n,kind,"union")) {
+  if (checkAttribute(n,"kind","union")) {
     
   }
-  if (checkAttribute(n,kind,"struct")) {
+  if (checkAttribute(n,"kind","struct")) {
     //TODO copy the declaration to header file
   }
-  if (checkAttribute(n,kind,"class")) {
+  if (checkAttribute(n,"kind","class")) {
     flags.inClass = true;
     /* Getting class names and file path */
     String *mClass_fileName = NewString(packageDirName);

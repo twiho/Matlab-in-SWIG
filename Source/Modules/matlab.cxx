@@ -397,6 +397,7 @@ int MATLAB::destructorHandler(Node *n) {
 }
 
 int MATLAB::functionWrapper(Node *n) {
+    // TODO generated setters and getters of global variables does not work
   
     /* Get some useful attributes of this function */
     String   *name   = Getattr(n,"sym:name");

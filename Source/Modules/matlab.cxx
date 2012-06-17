@@ -10,11 +10,11 @@ class MATLAB : public Language {
 protected:
 
   struct {
-      bool isCpp;
-      bool isDebugging;
-      bool inClass;
-      bool inConstructor;
-      bool inDestructor;
+    bool isCpp;
+    bool isDebugging;
+    bool inClass;
+    bool inConstructor;
+    bool inDestructor;
   } flags;
 
   void generateCppBaseClass(String *filePath);
@@ -26,11 +26,11 @@ protected:
 
   String *getMatlabType(Parm *p, int *pointerCount, int *referenceCount, int typeType);
 
-  File * f_begin;
-  String * f_runtime;
-  String * f_init;
-  String * f_header;
-  String * f_wrappers;
+  File *f_begin;
+  String *f_runtime;
+  String *f_init;
+  String *f_header;
+  String *f_wrappers;
 
   String *module;
   String *packageDirName;
@@ -54,7 +54,7 @@ public:
 /*** Matlab module function ***/
 void MATLAB::generateCppBaseClass(String *filePath) {
   if (flags.isDebugging)
-      Printf(stdout,"Generating CppBaseClass\n");
+    Printf(stdout,"Generating CppBaseClass\n");
   String *fileName = NewStringf("%sCppBaseClass.m",filePath?filePath:"");
   String* code = NewString("");
   Printf(code,"classdef CppBaseClass < handle\n\n");
@@ -76,7 +76,7 @@ void MATLAB::generateCppBaseClass(String *filePath) {
 
 void MATLAB::generateCppPointerClass(String *filePath) {
   if (flags.isDebugging)
-      Printf(stdout,"Generating CppPointerClass\n");
+    Printf(stdout,"Generating CppPointerClass\n");
   String *fileName = NewStringf("%sCppPointerClass.m",filePath?filePath:"");
   String* code = NewString("");
   Printf(code,"classdef CppPointerClass\n\n");
@@ -107,7 +107,7 @@ void MATLAB::generateCppPointerClass(String *filePath) {
 
 void MATLAB::generateCppDummyPointerClass(String *filePath) {
   if (flags.isDebugging)
-      Printf(stdout,"Generating CppDummyPointerClass\n");
+    Printf(stdout,"Generating CppDummyPointerClass\n");
   String *fileName = NewStringf("%sCppDummyPointerClass.m",filePath?filePath:"");
   String *code = NewString("classdef CppDummyPointerClass\nend %classdef\n");
   File *mFile = NewFile(fileName,"w",SWIG_output_files());
@@ -164,31 +164,31 @@ String *MATLAB::generateMFunctionContent(Node *n) {
 String *MATLAB::getMatlabType(Parm *p, int *pointerCount, int *referenceCount, int typeType) {
   SwigType *type = Getattr(p,"type");
   String *name = Getattr(p,"name");
-  if(pointerCount != 0)
+  if (pointerCount != 0)
     *pointerCount = 0;
   while (SwigType_ispointer(type)) {
     SwigType_del_pointer(type);
-    if(pointerCount != 0)
+    if (pointerCount != 0)
       *pointerCount += 1;
   }
-  if(referenceCount != 0)
+  if (referenceCount != 0)
     *referenceCount = 0;
   while (SwigType_isreference(type)) {
     SwigType_del_reference(type);
-    if(referenceCount != 0)
+    if (referenceCount != 0)
       *referenceCount += 1;
   }
   Parm *p2 = NewParm(type,name,p);
   String *mClass = Swig_typemap_lookup("mclass",p2,"",0);
-  if(mClass)
-      return mClass;
+  if (mClass)
+    return mClass;
   switch(typeType) {
-      case MEXACT:
-        return Swig_typemap_lookup("mexact",p2,"",0);
-      case MCOMPATIBLE:
-        return Swig_typemap_lookup("mcompatible",p2,"",0);
-      case MFREE:
-        return Swig_typemap_lookup("mfree",p2,"",0);
+    case MEXACT:
+      return Swig_typemap_lookup("mexact",p2,"",0);
+    case MCOMPATIBLE:
+      return Swig_typemap_lookup("mcompatible",p2,"",0);
+    case MFREE:
+      return Swig_typemap_lookup("mfree",p2,"",0);
   }
   return 0;
 }
@@ -197,18 +197,15 @@ String *MATLAB::getMatlabType(Parm *p, int *pointerCount, int *referenceCount, i
 void MATLAB::main(int argc, char *argv[]) {
   flags.isCpp = false;
   flags.isDebugging = false;
-  flags.inClass = false;
-  flags.inConstructor = false;
-  flags.inDestructor = false;
   /* Parsing command line arguments */
   for (int i = 1; i < argc; i++) {
     if (argv[i]) {
-      if(strcmp(argv[i],"-c++") == 0) {
-          flags.isCpp = true;
+      if (strcmp(argv[i],"-c++") == 0) {
+        flags.isCpp = true;
       }
-      if(strcmp(argv[i],"-debug-matlab") == 0) {
-          flags.isDebugging = true;
-          Swig_mark_arg(i);
+      if (strcmp(argv[i],"-debug-matlab") == 0) {
+        flags.isDebugging = true;
+        Swig_mark_arg(i);
       }
     }
   }
@@ -235,69 +232,70 @@ int MATLAB::top(Node *n) {
   // TODO set libraryFileName
   libraryFileName = NewStringf("lib%s",module);
   // Generates matlab base classes
-  if(flags.isCpp) {
-      generateCppBaseClass(0);
-      generateCppPointerClass(0);
-      generateCppDummyPointerClass(0);
+  if (flags.isCpp) {
+    generateCppBaseClass(0);
+    generateCppPointerClass(0);
+    generateCppDummyPointerClass(0);
   }
   
   /* Initialize flags */
   flags.inClass = false;
-
+  flags.inConstructor = false;
+  flags.inDestructor = false;
    /* Initialize I/O */
     
-    //fill outfile with out file name
-    String *outfile=NewString(Getattr(n,"name"));
-    Append(outfile,"wrap.cpp"); //toto neni spravne, dodelam az budu v Brne - zatim tento hack
+  //fill outfile with out file name
+  String *outfile=NewString(Getattr(n,"name"));
+  Append(outfile,"wrap.cpp"); //toto neni spravne, dodelam az budu v Brne - zatim tento hack
 
-    f_begin = NewFile(outfile, "w", SWIG_output_files());
-    if (!f_begin) {
-       FileErrorDisplay(outfile);
-       SWIG_exit(EXIT_FAILURE);
-    }
-    f_runtime = NewString("");
-    f_init = NewString("");
-    f_header = NewString("");
-    f_wrappers = NewString("");
+  f_begin = NewFile(outfile, "w", SWIG_output_files());
+  if (!f_begin) {
+    FileErrorDisplay(outfile);
+    SWIG_exit(EXIT_FAILURE);
+  }
+  f_runtime = NewString("");
+  f_init = NewString("");
+  f_header = NewString("");
+  f_wrappers = NewString("");
 
-   /* Register file targets with the SWIG file handler */
-    Swig_register_filebyname("begin", f_begin);
-    Swig_register_filebyname("header", f_header);
-    Swig_register_filebyname("wrapper", f_wrappers);
-    Swig_register_filebyname("runtime", f_runtime);
-    Swig_register_filebyname("init", f_init);
+  /* Register file targets with the SWIG file handler */
+  Swig_register_filebyname("begin", f_begin);
+  Swig_register_filebyname("header", f_header);
+  Swig_register_filebyname("wrapper", f_wrappers);
+  Swig_register_filebyname("runtime", f_runtime);
+  Swig_register_filebyname("init", f_init);
 
-   /* Output module initialization code */
-    Swig_banner(f_begin);
-
-
-   /* Emit code for children */
-    Language::top(n);
+  /* Output module initialization code */
+  Swig_banner(f_begin);
 
 
-    /* Write all to the file */
-    Dump(f_runtime, f_begin);
-    Dump(f_header, f_begin);
-    Dump(f_wrappers, f_begin);
-    Wrapper_pretty_print(f_init, f_begin);
+  /* Emit code for children */
+  Language::top(n);
+
+
+  /* Write all to the file */
+  Dump(f_runtime, f_begin);
+  Dump(f_header, f_begin);
+  Dump(f_wrappers, f_begin);
+  Wrapper_pretty_print(f_init, f_begin);
  
-    /* Cleanup files */
-    Delete(f_runtime);
-    Delete(f_header);
-    Delete(f_wrappers);
-    Delete(f_init);
-    Close(f_begin);
-    Delete(f_begin);
+  /* Cleanup files */
+  Delete(f_runtime);
+  Delete(f_header);
+  Delete(f_wrappers);
+  Delete(f_init);
+  Close(f_begin);
+  Delete(f_begin);
 
   return SWIG_OK;
 }
 
 int MATLAB::classHandler(Node* n) {
   String* kind = Getattr(n,"kind");
-  if(!Strcmp(kind,"struct")) {
+  if (!Strcmp(kind,"struct")) {
     //TODO copy the declaration to header file
   }
-  if(!Strcmp(kind,"class")) {
+  if (!Strcmp(kind,"class")) {
     flags.inClass = true;
     /* Getting class names and file path */
     String *mClass_fileName = NewString(packageDirName);
@@ -323,7 +321,7 @@ int MATLAB::classHandler(Node* n) {
     Parm *classParm = NewParm(cppClassName,0,n);
     Swig_typemap_register("mclass",classParm,matlabFullClassName,0,0);
     //delete(classParm);
-    if(flags.isDebugging)
+    if (flags.isDebugging)
       Printf(stdout,"Parsing class: %s -> %s\n",cppClassName,matlabFullClassName);
 
     /* Creating file for Matlab class */
@@ -379,7 +377,7 @@ int MATLAB::functionHandler(Node* n) {
 #ifdef MATLABPRINTFUNCTIONENTRY
   Printf(stderr,"Entering functionHandler\n");
 #endif
-  if(Getattr(n,"feature:matlab:name")) {
+  if (Getattr(n,"feature:matlab:name")) {
     Setattr(n,"matlab:name",Getattr(n,"feature:matlab:name"));
   } else {
     Setattr(n,"matlab:name",Getattr(n,"sym:name"));
@@ -410,23 +408,22 @@ int MATLAB::destructorHandler(Node *n) {
 }
 
 int MATLAB::functionWrapper(Node *n) {
-    // TODO generated setters and getters of global variables does not work
+  // TODO generated setters and getters of global variables does not work
   
-    /* Get some useful attributes of this function */
-    String   *name   = Getattr(n,"sym:name");
-    SwigType *type   = Getattr(n,"type");
-    ParmList *parms  = Getattr(n,"parms");
-    String   *parmstr= ParmList_str_defaultargs(parms); // to string
-    String   *func   = SwigType_str(type, NewStringf("%s(%s)", name, parmstr));
-    String   *action = Getattr(n,"wrap:action");
-    
-    String *matlabFunctionName = Getattr(n,"matlab:name");
-    String *mFunction_content = generateMFunctionContent(n);
-  
-    if(flags.isDebugging)
-      Printf(stdout,"Parsing function: %s\n",matlabFunctionName);
+  /* Get some useful attributes of this function */
+  String   *name   = Getattr(n,"sym:name");
+  SwigType *type   = Getattr(n,"type");
+  ParmList *parms  = Getattr(n,"parms");
+  String   *parmstr= ParmList_str_defaultargs(parms); // to string
+  String   *func   = SwigType_str(type, NewStringf("%s(%s)", name, parmstr));
+  String   *action = Getattr(n,"wrap:action");
 
-    
+  String *matlabFunctionName = Getattr(n,"matlab:name");
+  String *mFunction_content = generateMFunctionContent(n);
+
+  if (flags.isDebugging)
+    Printf(stdout,"Parsing function: %s\n",matlabFunctionName);
+
 /*
     File * mClass_file = NewFile(mClass_fileName, "w", SWIG_output_files());
     if (!mClass_file) {
@@ -435,10 +432,10 @@ int MATLAB::functionWrapper(Node *n) {
   }
 */
 #ifdef DEBUG
-    Printf(stderr,"functionWrapper   : %s\n", func);
-    Printf(stderr,"           action : %s\n", action);
+  Printf(stderr,"functionWrapper   : %s\n", func);
+  Printf(stderr,"           action : %s\n", action);
 #endif
-  if(mFunction_content) {
+  if (mFunction_content) {
     if (flags.inClass) {
       String *function_declarations = NewString("methods");
       // TODO solve various class functions - static, ...

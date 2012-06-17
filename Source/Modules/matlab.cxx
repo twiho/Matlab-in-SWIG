@@ -1,5 +1,4 @@
 #include "swigmod.h"
-#define DEBUG
 
 #define MEXACT 1
 #define MCOMPATIBLE 2
@@ -12,6 +11,7 @@ protected:
 
   struct {
       bool isCpp;
+      bool isDebugging;
       bool inClass;
       bool inConstructor;
       bool inDestructor;
@@ -190,6 +190,7 @@ String *MATLAB::getMatlabType(Parm *p, int *pointerCount, int *referenceCount, i
 /*** Main function ***/
 void MATLAB::main(int argc, char *argv[]) {
   flags.isCpp = false;
+  flags.isDebugging = false;
   flags.inClass = false;
   flags.inConstructor = false;
   flags.inDestructor = false;
@@ -198,6 +199,10 @@ void MATLAB::main(int argc, char *argv[]) {
     if (argv[i]) {
       if(strcmp(argv[i],"-c++") == 0) {
           flags.isCpp = true;
+      }
+      if(strcmp(argv[i],"-debug-matlab") == 0) {
+          flags.isDebugging = true;
+          Swig_mark_arg(i);
       }
     }
   }
@@ -312,9 +317,8 @@ int MATLAB::classHandler(Node* n) {
     Parm *classParm = NewParm(cppClassName,0,n);
     Swig_typemap_register("mclass",classParm,matlabFullClassName,0,0);
     //delete(classParm);
-#ifdef DEBUG
-    Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);
-#endif
+    if(flags.isDebugging)
+      Printf(stderr,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);
 
     /* Creating file for Matlab class */
     File *mClass_file = NewFile(mClass_fileName,"w",SWIG_output_files());
@@ -337,9 +341,8 @@ int MATLAB::classHandler(Node* n) {
         Printf(mClass_content," %s %s",(superClassCount?"&":"<"),matlabFullSuperClassName);
         Printf(superClassConstructorCalls,"    this = this@%s(Dummy);\n",matlabFullSuperClassName);
         superClassCount++;
-#ifdef DEBUG
+        if(flags.isDebugging)
         Printf(stderr,"Inherites: %s\n",matlabFullSuperClassName);
-#endif
       }
     } else {
       Printf(mClass_content," < CppBaseClass");
@@ -407,8 +410,13 @@ int MATLAB::functionWrapper(Node *n) {
     String   *func   = SwigType_str(type, NewStringf("%s(%s)", name, parmstr));
     String   *action = Getattr(n,"wrap:action");
     
+    String *matlabFunctionName = Getattr(n,"matlab:name");
     String *mFunction_content = generateMFunctionContent(n);
   
+    if(flags.isDebugging)
+      Printf(stderr,"PARSING FUNCTION: %s\n",matlabFunctionName);
+
+    
 /*
     File * mClass_file = NewFile(mClass_fileName, "w", SWIG_output_files());
     if (!mClass_file) {
@@ -444,7 +452,7 @@ int MATLAB::functionWrapper(Node *n) {
         Delete(namespaces);
       }
       /* Creating function M-file */
-      Printf(mFunction_fileName,"%s.m",Getattr(n,"matlab:name"));
+      Printf(mFunction_fileName,"%s.m",matlabFunctionName);
       File *mFunction_file = NewFile(mFunction_fileName,"w",SWIG_output_files());
       if (!mFunction_file) {
         FileErrorDisplay(mFunction_fileName);

@@ -202,8 +202,7 @@ void MATLAB::main(int argc, char *argv[]) {
     if (argv[i]) {
       if (strcmp(argv[i],"-c++") == 0) {
         flags.isCpp = true;
-      }
-      if (strcmp(argv[i],"-debug-matlab") == 0) {
+      } else if (strcmp(argv[i],"-debug-matlab") == 0) {
         flags.isDebugging = true;
         Swig_mark_arg(i);
       }

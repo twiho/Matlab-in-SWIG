@@ -55,11 +55,12 @@ public:
 void MATLAB::generateCppBaseClass(String *filePath) {
   String *fileName = NewStringf("%sCppBaseClass.m",filePath?filePath:"");
   String* code = NewString("");
-  Printf(code,"classdef CppBaseClass < handle\n");
-  Printf(code,"    properties (GetAccess = public, SetAccess = protected)\n");
-  Printf(code,"        pointer;\n");
-  Printf(code,"    end\n");
+  Printf(code,"classdef CppBaseClass < handle\n\n");
+  Printf(code,"properties (GetAccess = public, SetAccess = protected)\n");
+  Printf(code,"    pointer;\n");
   Printf(code,"end\n");
+  Printf(code,"\n");
+  Printf(code,"end %%classdef\n");
   File *mFile = NewFile(fileName,"w",SWIG_output_files());
   if (!mFile) {
     FileErrorDisplay(mFile);
@@ -74,20 +75,21 @@ void MATLAB::generateCppBaseClass(String *filePath) {
 void MATLAB::generateCppPointerClass(String *filePath) {
   String *fileName = NewStringf("%sCppPointerClass.m",filePath?filePath:"");
   String* code = NewString("");
-  Printf(code,"classdef CppPointerClass\n");
-  Printf(code,"    properties (GetAccess = public, SetAccess = private)\n");
-  Printf(code,"        pointer;\n");
-  Printf(code,"    end\n");
-  Printf(code,"\n");
-  Printf(code,"    methods\n");
-  Printf(code,"        function this = CppPointerClass(p)\n");
-  Printf(code,"            if nargin ~= 1 || ~isa(p,'lib.pointer')\n");
-  Printf(code,"                error('Illegal constructor call');\n");
-  Printf(code,"            end\n");
-  Printf(code,"            this.pointer = p;\n");
-  Printf(code,"        end\n");
-  Printf(code,"    end\n");
+  Printf(code,"classdef CppPointerClass\n\n");
+  Printf(code,"properties (GetAccess = public, SetAccess = private)\n");
+  Printf(code,"    pointer;\n");
   Printf(code,"end\n");
+  Printf(code,"\n");
+  Printf(code,"methods\n");
+  Printf(code,"function this = CppPointerClass(p)\n");
+  Printf(code,"    if nargin ~= 1 || ~isa(p,'lib.pointer')\n");
+  Printf(code,"        error('Illegal constructor call');\n");
+  Printf(code,"    end\n");
+  Printf(code,"    this.pointer = p;\n");
+  Printf(code,"end\n");
+  Printf(code,"end\n");
+  Printf(code,"\n");
+  Printf(code,"end %%classdef\n");
   File *mFile = NewFile(fileName,"w",SWIG_output_files());
   if (!mFile) {
     FileErrorDisplay(mFile);
@@ -101,7 +103,7 @@ void MATLAB::generateCppPointerClass(String *filePath) {
 
 void MATLAB::generateCppDummyPointerClass(String *filePath) {
   String *fileName = NewStringf("%sCppDummyPointerClass.m",filePath?filePath:"");
-  String *code = NewString("classdef CppDummyPointerClass\nend\n");
+  String *code = NewString("classdef CppDummyPointerClass\nend %classdef\n");
   File *mFile = NewFile(fileName,"w",SWIG_output_files());
   if (!mFile) {
     FileErrorDisplay(mFile);
@@ -343,11 +345,11 @@ int MATLAB::classHandler(Node* n) {
     }
     Delete(superClassList);
   
-    Printf(mClass_content, "\n");
+    Printf(mClass_content, "\n\n");
     // Property for pointer to C++ object
-    Printf(mClass_content, "    properties (GetAccess = private, SetAccess = private)\n");
-    Printf(mClass_content, "        callDestructor = false;\n");
-    Printf(mClass_content, "    end\n\n");
+    Printf(mClass_content, "properties (GetAccess = private, SetAccess = private)\n");
+    Printf(mClass_content, "    callDestructor = false;\n");
+    Printf(mClass_content, "end\n\n");
     Language::classHandler(n); //poresi nam ruzne gety a sety a konstruktory atp
     Printf(mClass_content, "end %%classdef\n");
 

@@ -379,7 +379,11 @@ int MATLAB::functionHandler(Node* n) {
 #ifdef MATLABPRINTFUNCTIONENTRY
   Printf(stderr,"Entering functionHandler\n");
 #endif
-  Setattr(n,"matlab:name",Getattr(n,"sym:name"));
+  if(Getattr(n,"feature:matlab:name")) {
+    Setattr(n,"matlab:name",Getattr(n,"feature:matlab:name"));
+  } else {
+    Setattr(n,"matlab:name",Getattr(n,"sym:name"));
+  }
   Language::functionHandler(n);
   return SWIG_OK;
 }

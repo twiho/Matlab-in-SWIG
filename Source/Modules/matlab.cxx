@@ -21,6 +21,9 @@ protected:
   void generateCppPointerClass(String *filePath);
   void generateCppDummyPointerClass(String *filePath);
 
+  String *generateLibisloadedTest();
+  String *generateMFunctionContent(Node *n);
+
   String *getMatlabType(Parm *p, int *pointerCount, int *referenceCount, int typeType);
 
   File * f_begin;
@@ -31,6 +34,7 @@ protected:
 
   String *module;
   String *packageDirName;
+  String *libraryFileName;
 
   String * mClass_content;
 
@@ -39,6 +43,7 @@ public:
   virtual void main(int argc, char *argv[]);
   virtual int top(Node *n);
   int classHandler(Node *n);
+  int functionHandler(Node *n);
   int constructorHandler(Node *n);
   int destructorHandler(Node *n);
   int functionWrapper(Node *n);
@@ -107,6 +112,35 @@ void MATLAB::generateCppDummyPointerClass(String *filePath) {
   Delete(fileName);
 }
 
+String *MATLAB::generateLibisloadedTest() {
+  String *code = NewStringf("    if ~libisloaded('%s')\n",libraryFileName);
+  Printf(code,"        error('Library %s is not loaded. Call %s.load()');\n",libraryFileName,module);
+  Printf(code,"    end\n");
+  return code;
+}
+
+String *MATLAB::generateMFunctionContent(Node *n) {
+  if (!Getattr(n, "sym:nextSibling")) {
+    String *mFunction_content = NewString("");
+    if (flags.inDestructor) {
+      Printf(mFunction_content,"function delete(this)\n");
+      Append(mFunction_content,generateLibisloadedTest());
+      Printf(mFunction_content,"    if callDestructor\n");
+      //Printf(mFunction_content,"        calllib()\n"); //TODO
+      Printf(mFunction_content,"    end\n");
+      Printf(mFunction_content,"end\n");
+      return mFunction_content;
+    }
+    Printf(mFunction_content,"function %s(varargin)\n",Getattr(n,"matlab:name"));
+    Append(mFunction_content,generateLibisloadedTest());
+    
+    
+    Printf(mFunction_content,"end\n");
+    return mFunction_content;
+  }
+  return 0;
+}
+
 String *MATLAB::getMatlabType(Parm *p, int *pointerCount, int *referenceCount, int typeType) {
   SwigType *type = Getattr(p,"type");
   String *name = Getattr(p,"name");
@@ -173,7 +207,8 @@ int MATLAB::top(Node *n) {
   module = Getattr(n,"name");
   packageDirName = NewStringf("+%s/",module);
   Swig_new_subdirectory(NewStringEmpty(),packageDirName);
-  
+  // TODO set libraryFileName
+  libraryFileName = NewStringf("lib%s",module);
   // Generates matlab base classes
   if(flags.isCpp) {
       generateCppBaseClass(0);
@@ -313,6 +348,15 @@ int MATLAB::classHandler(Node* n) {
   return SWIG_OK;
 }
 
+int MATLAB::functionHandler(Node* n) {
+#ifdef MATLABPRINTFUNCTIONENTRY
+  Printf(stderr,"Entering functionHandler\n");
+#endif
+  Setattr(n,"matlab:name",Getattr(n,"sym:name"));
+  Language::functionHandler(n);
+  return SWIG_OK;
+}
+
 int MATLAB::constructorHandler(Node *n) {
 #ifdef MATLABPRINTFUNCTIONENTRY
   Printf(stderr,"Entering constructorHandler\n");
@@ -336,7 +380,7 @@ int MATLAB::destructorHandler(Node *n) {
 int MATLAB::functionWrapper(Node *n) {
 
   /* Generating wrapper after parsing all overloaded functions */
-  if (!Getattr(n, "sym:nextSibling")) {
+  
     /* Get some useful attributes of this function */
     String   *name   = Getattr(n,"sym:name");
     SwigType *type   = Getattr(n,"type");
@@ -344,10 +388,8 @@ int MATLAB::functionWrapper(Node *n) {
     String   *parmstr= ParmList_str_defaultargs(parms); // to string
     String   *func   = SwigType_str(type, NewStringf("%s(%s)", name, parmstr));
     String   *action = Getattr(n,"wrap:action");
-
-    String *matlabFunctionName = Getattr(n,"sym:name");
     
-    String *mFunction_content = NewString("");
+    String *mFunction_content = generateMFunctionContent(n);
   
 /*
     File * mClass_file = NewFile(mClass_fileName, "w", SWIG_output_files());
@@ -360,22 +402,7 @@ int MATLAB::functionWrapper(Node *n) {
     Printf(stderr,"functionWrapper   : %s\n", func);
     Printf(stderr,"           action : %s\n", action);
 
-    if(flags.inConstructor) {
-      Printf(mFunction_content,"function [this] = xxx(varargin)\n"); // TODO className
-      Printf(mFunction_content,"    if \n");
-      //Printf(mFunction_content,"        calllib()\n"); //TODO
-      Printf(mFunction_content,"    end\n");
-      Printf(mFunction_content,"end\n");
-    }
-
-    if(flags.inDestructor) {
-      Printf(mFunction_content,"function delete(this)\n");
-      Printf(mFunction_content,"    if callDestructor\n");
-      //Printf(mFunction_content,"        calllib()\n"); //TODO
-      Printf(mFunction_content,"    end\n");
-      Printf(mFunction_content,"end\n");
-    }
-
+  if(mFunction_content) {
     if (flags.inClass) {
       String *function_declarations = NewString("methods");
       // TODO solve various class functions - static, ...
@@ -399,7 +426,7 @@ int MATLAB::functionWrapper(Node *n) {
         Delete(namespaces);
       }
       /* Creating function M-file */
-      Printf(mFunction_fileName,"%s.m",matlabFunctionName);
+      Printf(mFunction_fileName,"%s.m",Getattr(n,"matlab:name"));
       File *mFunction_file = NewFile(mFunction_fileName,"w",SWIG_output_files());
       if (!mFunction_file) {
         FileErrorDisplay(mFunction_fileName);

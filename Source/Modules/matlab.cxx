@@ -98,7 +98,7 @@ String *MATLAB::generateMFunctionContent(Node *n) {
       Printf(mFunction_content,"end\n");
       return mFunction_content;
     }
-    Printf(mFunction_content,"function %s(varargin)\n",Getattr(n,"matlab:name"));
+    Printf(mFunction_content,"function retVal = %s(varargin)\n",Getattr(n,"matlab:name"));
     Append(mFunction_content,generateLibisloadedTest());
     if (flags.inConstructor) {
       Append(mFunction_content,superClassConstructorCalls);
@@ -106,11 +106,33 @@ String *MATLAB::generateMFunctionContent(Node *n) {
       Printf(mFunction_content,"        return;\n");
       Printf(mFunction_content,"    end\n");
       Printf(mFunction_content,"    if nargin == 1 && isa(varargin{1},'CppPointerClass')\n");
-      Printf(mFunction_content,"        this.pointer = varargin{1}.pointer;\n");
-      Printf(mFunction_content,"        callDestructor = true;\n");
+      Printf(mFunction_content,"        retVal.pointer = varargin{1}.pointer;\n");
+      Printf(mFunction_content,"        retVal.callDestructor = true;\n");
       Printf(mFunction_content,"        return;\n");
       Printf(mFunction_content,"    end\n");
     }
+
+    Node *overloadNode = n;
+    while(Getattr(overloadNode,"sym:previousSibling"))
+        overloadNode=Getattr(overloadNode,"sym:previousSibling");
+
+    String *exactTests = NewString("");
+    String *compatibleTests = NewString("");
+    String *freeTests = NewString("");
+
+    do {
+      String *libraryCall = NewString("        ");
+      
+      
+      
+      
+      delete(libraryCall);
+    } while (overloadNode = Getattr(helpNode,"sym:nextSibling"));
+
+    delete(exactTests);
+    delete(compatibleTests);
+    delete(freeTests);
+
     Printf(mFunction_content,"    error('Illegal function call');\n");
     Printf(mFunction_content,"end\n");
     return mFunction_content;

@@ -301,6 +301,7 @@ int MATLAB::classHandler(Node* n) {
     Printf(mClass_content, "        callDestructor = false;\n");
     Printf(mClass_content, "    end\n\n");
     Language::classHandler(n); //poresi nam ruzne gety a sety a konstruktory atp
+    Printf(mClass_content, "end %%classdef\n");
 
     Dump(mClass_content, mClass_file);
     Close(mClass_file);
@@ -358,8 +359,29 @@ int MATLAB::functionWrapper(Node *n) {
 
     Printf(stderr,"functionWrapper   : %s\n", func);
     Printf(stderr,"           action : %s\n", action);
-  
+
+    if(flags.inConstructor) {
+      Printf(mFunction_content,"function [this] = xxx(varargin)\n"); // TODO className
+      Printf(mFunction_content,"    if \n");
+      //Printf(mFunction_content,"        calllib()\n"); //TODO
+      Printf(mFunction_content,"    end\n");
+      Printf(mFunction_content,"end\n");
+    }
+
+    if(flags.inDestructor) {
+      Printf(mFunction_content,"function delete(this)\n");
+      Printf(mFunction_content,"    if callDestructor\n");
+      //Printf(mFunction_content,"        calllib()\n"); //TODO
+      Printf(mFunction_content,"    end\n");
+      Printf(mFunction_content,"end\n");
+    }
+
     if (flags.inClass) {
+      String *function_declarations = NewString("methods");
+      // TODO solve various class functions - static, ...
+      Append(function_declarations,"\n");
+      Push(mFunction_content,function_declarations);
+      Append(mFunction_content,"end\n\n");
       // TODO add indentation to mFunction_content
       Append(mClass_content,mFunction_content);
     } else {

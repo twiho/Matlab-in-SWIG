@@ -147,8 +147,13 @@ String *MATLAB::generateMFunctionContent(Node *n) {
       Printf(libraryCall,")));\n");
       if(flags.inConstructor)
         Printf(libraryCall,"        retVal.callDestructor = true;\n");
+        Printf(libraryCall,"        return;\n");
       Delete(libraryCall);
     } while ((overloadNode = Getattr(overloadNode,"sym:nextSibling")));
+
+    Append(mFunction_content,exactTests);
+    Append(mFunction_content,compatibleTests);
+    Append(mFunction_content,freeTests);
 
     Delete(exactTests);
     Delete(compatibleTests);

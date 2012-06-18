@@ -122,16 +122,37 @@ String *MATLAB::generateMFunctionContent(Node *n) {
 
     do {
       String *libraryCall = NewString("        ");
+      if (flags.inConstructor) {
+        Printf(libraryCall,"retVal.pointer = (");
+      } else {
+        if (checkAttribute(overloadNode,"type","void")) {
+          Printf(libraryCall,"(");
+        } else if (Getattr(overloadNode,"feature:matlab:textout")) {
+          // TODO possibly test, whether the type attribute is char
+          Printf(libraryCall,"retVal = (char");
+        } else {
+          String *retMatlabType = getMatlabType(overloadNode,0,0,MCLASS);
+          if (retMatlabType) {
+            // is object return type
+            Printf(libraryCall,"retVal = %s(CppPointerClass",retMatlabType);
+          } else {
+            retMatlabType = getMatlabType(overloadNode,0,0,MEXACT);
+            Printf(libraryCall,"retVal = (%s",retMatlabType);
+          }
+        }
+      }
+      Printf(libraryCall,"(calllib(");
       
       
-      
-      
-      delete(libraryCall);
-    } while (overloadNode = Getattr(overloadNode,"sym:nextSibling"));
+      Printf(libraryCall,")));\n");
+      if(flags.inConstructor)
+        Printf(libraryCall,"        retVal.callDestructor = true;\n");
+      Delete(libraryCall);
+    } while ((overloadNode = Getattr(overloadNode,"sym:nextSibling")));
 
-    delete(exactTests);
-    delete(compatibleTests);
-    delete(freeTests);
+    Delete(exactTests);
+    Delete(compatibleTests);
+    Delete(freeTests);
 
     Printf(mFunction_content,"    error('Illegal function call');\n");
     Printf(mFunction_content,"end\n");
@@ -298,7 +319,7 @@ int MATLAB::classHandler(Node* n) {
     Printf(matlabFullClassName,"%s",matlabClassName);
     Parm *classParm = NewParm(cppClassName,0,n);
     Swig_typemap_register("mclass",classParm,matlabFullClassName,0,0);
-    //delete(classParm);
+    Delete(classParm);
     if (flags.isDebugging)
       Printf(stdout,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);
 

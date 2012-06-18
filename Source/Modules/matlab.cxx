@@ -127,7 +127,7 @@ String *MATLAB::generateMFunctionContent(Node *n) {
       
       
       delete(libraryCall);
-    } while (overloadNode = Getattr(helpNode,"sym:nextSibling"));
+    } while (overloadNode = Getattr(overloadNode,"sym:nextSibling"));
 
     delete(exactTests);
     delete(compatibleTests);

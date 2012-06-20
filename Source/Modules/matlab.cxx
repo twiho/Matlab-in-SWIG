@@ -5,6 +5,12 @@
 #define MFREE 3
 #define MCLASS 4
 
+static const char *usage = (char *) "\
+Matlab Options (available with -matlab)\n\
+     -debug-matlab      - Prints information about parsing\n\
+\n";
+
+
 class MATLAB : public Language {
 
 protected:
@@ -207,6 +213,8 @@ void MATLAB::main(int argc, char *argv[]) {
     if (argv[i]) {
       if (strcmp(argv[i],"-c++") == 0) {
         flags.isCpp = true;
+      } else if (strcmp(argv[i],"-help") == 0) {
+          fputs(usage, stdout);
       } else if (strcmp(argv[i],"-debug-matlab") == 0) {
         flags.isDebugging = true;
         Swig_mark_arg(i);

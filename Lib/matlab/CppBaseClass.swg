@@ -19,14 +19,23 @@ function retVal = worker(method, pointer)
             r = 1;
             while(r<=numel(register))
                 if register(r) == pointer
-                    if ~deleted
-                        register(r) = [];
-                        deleted = true;
-                    else
-                        retVal = false;
-                        return;
-                    end
+                    register(r) = [];
+                    deleted = true;
+                    break;
                 end
+                r = r+1;
+            end
+            if ~deleted
+                warning('LibraryUI:CppPointerRegister','Pointer not registered. The C++ object was either already deleted, or not registered - possible memory leak!');
+                retVal = false;
+                return;
+            end
+            while(r<=numel(register))
+                if register(r) == pointer
+                    retVal = false;
+                    return;
+                end
+                r = r+1;
             end
             retVal = true;
     end

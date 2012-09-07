@@ -18,6 +18,10 @@ protected:
   struct {
     bool isCpp;
     bool isDebugging;
+    bool createBaseClasses;
+  } options;
+
+  struct {
     bool inClass;
     bool inConstructor;
     bool inDestructor;
@@ -59,7 +63,7 @@ public:
 /*** Matlab module function ***/
 
 void MATLAB::insertMatlabClass(const_String_or_char_ptr className) {
-  if (flags.isDebugging)
+  if (options.isDebugging)
     Printf(stdout,"Inserting %s\n",className);
   String *matlabClassFileName = NewStringf("%s.m",className);
   String *matlabClassSourceFileName = NewStringf("%s.swg",className);
@@ -75,12 +79,12 @@ void MATLAB::insertMatlabClass(const_String_or_char_ptr className) {
 }
 
 void MATLAB::insertMatlabClasses() {
-  if (flags.isDebugging)
+  if (options.isDebugging)
     Printf(stdout,"INSERTING BASE MATLAB CLASSES:\n");
   insertMatlabClass("CppBaseClass");
   insertMatlabClass("CppPointerClass");
   insertMatlabClass("CppDummyPointerClass");
-  if (flags.isDebugging)
+  if (options.isDebugging)
     Printf(stdout,"BASE MATLAB CLASSES INSERTED\n");
 }
 
@@ -206,17 +210,21 @@ String *MATLAB::getMatlabType(Parm *p, int *pointerCount, int *referenceCount, i
 
 /*** Main function ***/
 void MATLAB::main(int argc, char *argv[]) {
-  flags.isCpp = false;
-  flags.isDebugging = false;
+  options.isCpp = false;
+  options.isDebugging = false;
+  options.createBaseClasses = true;
   /* Parsing command line arguments */
   for (int i = 1; i < argc; i++) {
     if (argv[i]) {
       if (strcmp(argv[i],"-c++") == 0) {
-        flags.isCpp = true;
+        options.isCpp = true;
       } else if (strcmp(argv[i],"-help") == 0) {
-          fputs(usage, stdout);
+        fputs(usage, stdout);
       } else if (strcmp(argv[i],"-debug-matlab") == 0) {
-        flags.isDebugging = true;
+        options.isDebugging = true;
+        Swig_mark_arg(i);
+      } else if (strcmp(argv[i],"-no_base_classes") == 0) {
+        options.createBaseClasses = false;
         Swig_mark_arg(i);
       }
     }
@@ -244,7 +252,7 @@ int MATLAB::top(Node *n) {
   // TODO set libraryFileName
   libraryFileName = NewStringf("lib%s",module);
   // Generates matlab base classes
-  if (flags.isCpp) {
+  if (options.isCpp && options.createBaseClasses) {
     insertMatlabClasses();
   }
   
@@ -333,7 +341,7 @@ int MATLAB::classHandler(Node* n) {
     Parm *classParm = NewParm(cppClassName,0,n);
     Swig_typemap_register("mclass",classParm,matlabFullClassName,0,0);
     Delete(classParm);
-    if (flags.isDebugging)
+    if (options.isDebugging)
       Printf(stdout,"PARSING CLASS: %s -> %s\n",cppClassName,matlabFullClassName);
 
     /* Creating file for Matlab class */
@@ -357,7 +365,7 @@ int MATLAB::classHandler(Node* n) {
         Printf(mClass_content," %s %s",(superClassCount?"&":"<"),matlabFullSuperClassName);
         Printf(superClassConstructorCalls,"    this = this@%s(Dummy);\n",matlabFullSuperClassName);
         superClassCount++;
-        if(flags.isDebugging)
+        if(options.isDebugging)
         Printf(stdout,"Inherites: %s\n",matlabFullSuperClassName);
       }
     } else {
@@ -381,7 +389,7 @@ int MATLAB::classHandler(Node* n) {
     Delete(mClass_fileName);
 
     flags.inClass = false;
-    if (flags.isDebugging)
+    if (options.isDebugging)
       Printf(stdout,"CLASS PARSED\n");
   }
   return SWIG_OK;
@@ -435,7 +443,7 @@ int MATLAB::functionWrapper(Node *n) {
   String *matlabFunctionName = Getattr(n,"matlab:name");
   String *mFunction_content = generateMFunctionContent(n);
 
-  if (flags.isDebugging)
+  if (options.isDebugging)
     Printf(stdout,"Parsing function: %s\n",matlabFunctionName);
 
 /*
